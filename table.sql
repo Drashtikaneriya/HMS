@@ -1,15 +1,15 @@
---CREATE DATABASE Hospital_Management_System 
+CREATE DATABASE Hospital_Management_System 
 
---CREATE TABLE Users (
---    UserID INT IDENTITY(1,1) PRIMARY KEY,  
---    UserName NVARCHAR(100) NOT NULL,
---    Password NVARCHAR(100) NOT NULL,
---    Email NVARCHAR(100) NOT NULL,
---    MobileNo NVARCHAR(100) NOT NULL,
---    IsActive BIT NOT NULL DEFAULT 1,
---    Created DATETIME DEFAULT GETDATE(),
---    Modified DATETIME NOT NULL
---);
+CREATE TABLE Users (
+    UserID INT IDENTITY(1,1) PRIMARY KEY,  
+    UserName NVARCHAR(100) NOT NULL,
+    Password NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL,
+    MobileNo NVARCHAR(100) NOT NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    Created DATETIME DEFAULT GETDATE(),
+    Modified DATETIME NOT NULL
+);
 
 CREATE TABLE Department (
     DepartmentID   INT IDENTITY(1,1) PRIMARY KEY,
