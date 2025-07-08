@@ -1,0 +1,28 @@
+﻿@model DataTable ;
+@using System.Data;
+<h1>User List</h1>
+<table class=" table table-responsive table-bordered">
+	<thead>
+    <th>[UserID]</th>
+    <th>[UserName]</th>
+    <th>[password]</th>
+    <th>[email]</th>
+    <th>[mobileno ]</th>
+    <th>[isactive]</th>
+    <th>[created]</th>
+    <th>[modified]</th>
+    </thead>
+    @foreach (DataRow dr in Model.Rows){
+        <tr>
+            <td>@dr["UserID"]</td>
+            <td>@dr["UserName"]</td>
+            <td>@dr["Password"]</td>
+            <td>@dr["Email"]</td>
+            <td>@dr["Mobile no"]</td>
+            <td>@dr["IsActive"]</td>
+            <td>@dr["Created"]</td>
+            <td>@dr["Modified"]</td>
+
+        </tr>
+    }
+</table>
