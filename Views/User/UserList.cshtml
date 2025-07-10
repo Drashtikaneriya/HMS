@@ -1,28 +1,93 @@
-﻿@model DataTable ;
-@using System.Data;
-<h1>User List</h1>
-<table class=" table table-responsive table-bordered">
-	<thead>
-    <th>[UserID]</th>
-    <th>[UserName]</th>
-    <th>[password]</th>
-    <th>[email]</th>
+﻿@model DataTable
+@using System.Data
 
-    <th>[isactive]</th>
-    <th>[created]</th>
-    <th>[modified]</th>
-    </thead>
-    @foreach (DataRow dr in Model.Rows){
+@{
+    ViewData["Title"] = "User List";
+}
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<h1 class="mb-4">User List</h1>
+
+<!-- Search Form -->
+<form method="get" asp-action="UserList" class="mb-3">
+    <div class="input-group w-50">
+        <input type="text" name="searchTerm" class="form-control" placeholder="Search by User Name"  />
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+</form>
+
+<!-- Error Message -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!-- User Table -->
+<table class="table table-bordered ">
+    <thead>
         <tr>
-            <td>@dr["UserID"]</td>
-            <td>@dr["UserName"]</td>
-            <td>@dr["Password"]</td>
-            <td>@dr["Email"]</td>
-       
-            <td>@dr["IsActive"]</td>
-            <td>@dr["Created"]</td>
-            <td>@dr["Modified"]</td>
-
+            <th>User Name</th>
+            <th>Email</th>
+            <th>IsActive</th>
+            <th>Created</th>
+            <th>Status</th>
+            <th>Modified</th>
+            <th>Actions</th>
         </tr>
-    }
+    </thead>
+    <tbody>
+        @foreach (DataRow row in Model.Rows)
+        {
+            <tr>
+                <td>@row["UserName"]</td>
+                <td>@row["Email"]</td>
+                <td>@row["IsActive"]</td>
+                <td>@row["Created"]</td>
+                <td>
+                    @if (Convert.ToBoolean(row["IsActive"]))
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Not Active</span>
+                    }
+                </td>
+                <td>@row["Modified"]</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a asp-controller="User" asp-action="Index" asp-route-UserID="@row["UserID"]" class="btn btn-primary btn-sm me-1">Edit</a>
+
+                    <!-- SweetAlert Delete Button -->
+                    <button type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="confirmDelete('@row["UserID"]', '@row["UserName"]')">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
+
+<!-- SweetAlert Delete Script -->
+<script>
+    function confirmDelete(userId, userName) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to delete user "${userName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/User/UserDelete?UserID=${userId}`;
+            }
+        });
+    }
+</script>

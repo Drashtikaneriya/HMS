@@ -275,7 +275,7 @@
         <ul class="sidebar-nav" id="sidebar-nav">
 
             <li class="nav-item">
-                <a class="nav-link " href="index.html">
+                <a asp-controller="Dashboard" asp-action="Index">
                     <i class="bi bi-grid"></i>
                     <span>Dashboard</span>
                 </a>
@@ -362,7 +362,7 @@
                 </a>
                 <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
                     <li>
-                        <a asp-controller="Appointment" asp-action="Index">
+                        <a asp-controller="Appointment" asp-action="AppointmentAddEdit">
                             <i class="bi bi-circle"></i><span>Appointment Add/Edit</span>
                         </a>
                     </li>
@@ -402,7 +402,7 @@
     <main id="main" class="main">
 
 
-        @RenderBody();
+        @RenderBody()
 
     </main><!-- End #main -->
     <!-- ======= Footer ======= -->

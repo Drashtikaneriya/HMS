@@ -1,5 +1,44 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Assign Doctor to Department";
 }
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4" style="background-color: #fefefe;">
+                <div class="card-header text-center rounded-top-4" style="background-color: #eaf6ff;">
+                    <h4 class="mb-0 text-primary">Assign Doctor to Department</h4>
+                </div>
+                <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
+                    <form asp-action="InsertDoctorDepartment" method="post" autocomplete="off">
+                        <div class="mb-3">
+                            <label for="DoctorID" class="form-label fw-bold text-dark">Doctor ID</label>
+                            <input type="number" class="form-control border-light rounded-3" id="DoctorID" name="DoctorID" placeholder="Enter Doctor ID" style="background-color: #f5faff;" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="DepartmentID" class="form-label fw-bold text-dark">Department ID</label>
+                            <input type="number" class="form-control border-light rounded-3" id="DepartmentID" name="DepartmentID" placeholder="Enter Department ID" style="background-color: #f5faff;" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Modified" class="form-label fw-bold text-dark">Modified Date</label>
+                            <input type="datetime-local" class="form-control border-light rounded-3" id="Modified" name="Modified"
+                                   value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                                   style="background-color: #f5faff;" required />
+                        </div>
+
+                        <input type="hidden" name="UserID" value="@ViewBag.UserID" />
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
+                    © HMS System • 2025
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

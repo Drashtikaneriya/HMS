@@ -1,5 +1,81 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DataTable
+@using System.Data
+
 @{
+    ViewData["Title"] = "Department List";
 }
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<h1 class="mb-4">Department List</h1>
+
+<!-- Search Form -->
+<form method="get" asp-action="DepartmentList" class="mb-3">
+    <div class="input-group w-50">
+        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+</form>
+
+<!-- Error Message -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!-- Department Table -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Department ID</th>
+            <th>Department Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (DataRow dr in Model.Rows)
+        {
+            <tr>
+                <td>@dr["DepartmentID"]</td>
+                <td>@dr["DepartmentName"]</td>
+                <td>@dr["Description"]</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a asp-controller="Department" asp-action="Edit" asp-route-DepartmentID="@dr["DepartmentID"]" class="btn btn-primary btn-sm me-1">
+                        Edit
+                    </a>
+
+                    <!-- SweetAlert Delete Button -->
+                    <button type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="confirmDelete('@dr["DepartmentID"]', '@dr["DepartmentName"]')">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- SweetAlert Delete Script -->
+<script>
+    function confirmDelete(deptId, deptName) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to delete the department "${deptName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/Department/DepartmentDelete?DepartmentID=${deptId}`;
+            }
+        });
+    }
+
+</script>

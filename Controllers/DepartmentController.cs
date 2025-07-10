@@ -1,16 +1,55 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace HMS.Controllers
 {
     public class DepartmentController : Controller
     {
-        public IActionResult Index()
+        private IConfiguration configuration;
+
+        public DepartmentController(IConfiguration _configuration)
         {
-            return View("DepartmentAddEdit");
+            configuration = _configuration;
         }
         public IActionResult DepartmentList()
         {
-            return View();
+
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "PR_Dept_Department_SelectAll";
+            SqlDataReader reader = command.ExecuteReader();
+            DataTable table = new DataTable();
+            table.Load(reader);
+            return View(table);
+
+        }
+        public IActionResult DepartmentDelete(int DepartmentID)
+        {
+            try
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Dept_Department_Delete";
+                command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                Console.WriteLine(ex.ToString());
+            }
+            return RedirectToAction("DepartmentList");
+        }
+        public IActionResult Index()
+        {
+            return View("DepartmentAddEdit");
         }
     }
 }

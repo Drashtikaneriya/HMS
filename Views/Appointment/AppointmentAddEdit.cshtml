@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Insert Appointment";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4" style="background-color: #fefefe;">
+                <div class="card-header text-center rounded-top-4" style="background-color: #eaf6ff;">
+                    <h4 class="mb-0 text-primary">Insert New Appointment</h4>
+                </div>
+                <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
+                    <form asp-action="InsertAppointment" method="post" autocomplete="off">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="DoctorID" class="form-label fw-bold text-dark">Doctor ID</label>
+                                <input type="number" class="form-control border-light rounded-3" id="DoctorID" name="DoctorID" placeholder="Enter Doctor ID" style="background-color: #f5faff;" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="PatientID" class="form-label fw-bold text-dark">Patient ID</label>
+                                <input type="number" class="form-control border-light rounded-3" id="PatientID" name="PatientID" placeholder="Enter Patient ID" style="background-color: #f5faff;" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="AppointmentDate" class="form-label fw-bold text-dark">Appointment Date</label>
+                                <input type="datetime-local" class="form-control border-light rounded-3" id="AppointmentDate" name="AppointmentDate" style="background-color: #f5faff;" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="AppointmentStatus" class="form-label fw-bold text-dark">Appointment Status</label>
+                                <select class="form-select border-light rounded-3" id="AppointmentStatus" name="AppointmentStatus" style="background-color: #f5faff;" required>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="TotalConsultedAmount" class="form-label fw-bold text-dark">Consulted Amount</label>
+                                <input type="number" step="0.01" class="form-control border-light rounded-3" id="TotalConsultedAmount" name="TotalConsultedAmount" placeholder="e.g. 250.00" style="background-color: #f5faff;">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="Modified" class="form-label fw-bold text-dark">Modified Date</label>
+                                <input type="datetime-local" class="form-control border-light rounded-3" id="Modified" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" style="background-color: #f5faff;" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Description" class="form-label fw-bold text-dark">Description</label>
+                                <textarea class="form-control border-light rounded-3" id="Description" name="Description" rows="2" placeholder="Short description..." style="background-color: #f5faff;"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="SpecialRemarks" class="form-label fw-bold text-dark">Special Remarks</label>
+                                <textarea class="form-control border-light rounded-3" id="SpecialRemarks" name="SpecialRemarks" rows="2" placeholder="Any additional notes..." style="background-color: #f5faff;"></textarea>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="UserID" value="@ViewBag.UserID" />
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
+                    © HMS System • 2025
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,18 +2,18 @@
 @using System.Data
 
 @{
-    ViewData["Title"] = "Patient List";
+    ViewData["Title"] = "Appointment List";
 }
 
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<h1 class="mb-4">Patient List</h1>
+<h1 class="mb-4">Appointment List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="PatientList" class="mb-3">
+<form method="get" asp-action="AppointmentList" class="mb-3">
     <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Patient Name" />
+        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Patient Name" value="@Context.Request.Query["searchTerm"]" />
         <button type="submit" class="btn btn-outline-primary">Search</button>
     </div>
 </form>
@@ -24,17 +24,16 @@
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<!-- Patient Table -->
+<!-- Appointment Table -->
 <table class="table table-bordered">
-    <thead>
+    <thead >
         <tr>
-            <th>Patient ID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>Date of Birth</th>
+            <th>Appointment ID</th>
+            <th>Patient Name</th>
+            <th>Doctor Name</th>
             <th>Gender</th>
+            <th>Status</th>
+            <th>Date</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -42,23 +41,22 @@
         @foreach (DataRow dr in Model.Rows)
         {
             <tr>
-                <td>@dr["PatientID"]</td>
-                <td>@dr["UserName"]</td>
-                <td>@dr["Phone"]</td>
-                <td>@dr["Email"]</td>
-                <td>@dr["Address"]</td>
-                <td>@Convert.ToDateTime(dr["DateOfBirth"]).ToString("dd-MM-yyyy")</td>
+                <td>@dr["AppointmentID"]</td>
+                <td>@dr["PatientName"]</td>
+                <td>@dr["DoctorName"]</td>
                 <td>@dr["Gender"]</td>
+                <td>@dr["AppointmentStatus"]</td>
+                <td>@Convert.ToDateTime(dr["AppointmentDate"]).ToString("dd-MM-yyyy")</td>
                 <td>
                     <!-- Edit Button -->
-                    <a asp-controller="Patient" asp-action="Index" asp-route-PatientID="@dr["PatientID"]" class="btn btn-success btn-sm me-1">
+                    <a asp-controller="Appointment" asp-action="Edit" asp-route-AppointmentID="@dr["AppointmentID"]" class="btn btn-success btn-sm me-1">
                         Edit
                     </a>
 
                     <!-- SweetAlert Delete Button -->
                     <button type="button"
                             class="btn btn-danger btn-sm"
-                            onclick="confirmDelete('@dr["PatientID"]', '@dr["UserName"]')">
+                            onclick="confirmDelete('@dr["AppointmentID"]', '@dr["PatientName"]')">
                         Delete
                     </button>
                 </td>
@@ -69,10 +67,10 @@
 
 <!-- SweetAlert Delete Script -->
 <script>
-    function confirmDelete(patientId, patientName) {
+    function confirmDelete(appointmentId, patientName) {
         Swal.fire({
             title: 'Are you sure?',
-            text: `Do you really want to delete patient "${patientName}"?`,
+            text: `Do you really want to delete the appointment for "${patientName}"?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -81,7 +79,7 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/Patient/PatientDelete?PatientID=${patientId}`;
+                window.location.href = `/Appointment/AppointmentDelete?AppointmentID=${appointmentId}`;
             }
         });
     }

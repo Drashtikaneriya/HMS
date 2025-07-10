@@ -1,5 +1,97 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DataTable
+@using System.Data
+
 @{
+    ViewData["Title"] = "Doctor-Department Mapping List";
 }
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<h1 class="mb-4">Doctor-Department Mapping List</h1>
+
+<!-- Search Form -->
+<form method="get" asp-action="DoctorDepartmentList" class="mb-3">
+    <div class="input-group w-50">
+        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Doctor Name or Department" />
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+    </div>
+</form>
+
+<!-- Error Message -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!-- Scrollable table with responsive layout -->
+<div style="width: 100%; overflow-x: auto;">
+    <table class="table table-bordered" style="min-width: 1200px;">
+        <thead>
+            <tr>
+                <th style="min-width: 150px;">DoctorDept ID</th>
+                <th style="min-width: 150px;">Doctor Name</th>
+                <th style="min-width: 200px;">Department Name</th>
+                <th style="min-width: 120px;">Created</th>
+                <th style="min-width: 160px;">Modified</th>
+                <th style="min-width: 100px;">User ID</th>
+                <th style="min-width: 150px;">User Name</th>
+                <th style="min-width: 200px;">Email</th>
+                <th style="min-width: 140px;">Mobile No</th>
+                <th style="min-width: 160px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
+                <tr>
+                    <td>@dr["DoctorDepartmentID"]</td>
+                    <td>@dr["Doctorname"]</td>
+                    <td>@dr["deptname"]</td>
+                    <td>@Convert.ToDateTime(dr["Created"]).ToString("dd-MM-yyyy")</td>
+                    <td>@Convert.ToDateTime(dr["Modified"]).ToString("dd-MM-yyyy")</td>
+                    <td>@dr["UserID"]</td>
+                    <td>@dr["UserName"]</td>
+                    <td>@dr["Email"]</td>
+                    <td>@dr["MobileNo"]</td>
+                    <td>
+                        <!-- Edit Button -->
+                        <a asp-controller="DoctorDepartment"
+                           asp-action="DoctorDepartment"
+                           asp-route-DoctorDepartmentID="@dr["DoctorDepartmentID"]"
+                           class="btn btn-primary btn-sm me-1">
+                            Edit
+                        </a>
+
+                        <!-- SweetAlert Delete Button -->
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                onclick="confirmDelete('@dr["DoctorDepartmentID"]', '@dr["Doctorname"]')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- SweetAlert Delete Script -->
+<script>
+    function confirmDelete(id, name) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to delete the mapping for Doctor "${name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/DoctorDepartment/DoctorDepartmentDelete?DoctorDepartmentID=${id}`;
+            }
+        });
+    }
+</script>

@@ -1,110 +1,86 @@
-﻿﻿<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Doctor List</h5>
-        <p>Add <code>.table-bordered</code> for borders on all sides of the table and cells.</p>
-        <!-- Bordered Table -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Position</th>
-                    <th scope="col">Age</th>
-                    <th scope="col">Start Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>Brandon Jacob</td>
-                    <td>Designer</td>
-                    <td>28</td>
-                    <td>2016-05-25</td>
-                </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>Bridie Kessler</td>
-                    <td>Developer</td>
-                    <td>35</td>
-                    <td>2014-12-05</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>Ashleigh Langosh</td>
-                    <td>Finance</td>
-                    <td>45</td>
-                    <td>2011-08-12</td>
-                </tr>
-                <tr>
-                    <th scope="row">4</th>
-                    <td>Angus Grady</td>
-                    <td>HR</td>
-                    <td>34</td>
-                    <td>2012-06-11</td>
-                </tr>
-                <tr>
-                    <th scope="row">5</th>
-                    <td>Raheem Lehner</td>
-                    <td>Dynamic Division Officer</td>
-                    <td>47</td>
-                    <td>2011-04-19</td>
-                </tr>
-            </tbody>
-        </table>
-        <!-- End Bordered Table -->
+﻿@model DataTable
+@using System.Data
 
-        <p><a href="https://getbootstrap.com/docs/5.0/utilities/borders/#border-color" target="_blank">Border color utilities</a> can be added to change colors:</p>
+@{
+    ViewData["Title"] = "Doctor List";
+}
 
-        <!-- Primary Color Bordered Table -->
-        @* <table class="table table-bordered border-primary">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Position</th>
-                    <th scope="col">Age</th>
-                    <th scope="col">Start Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>Brandon Jacob</td>
-                    <td>Designer</td>
-                    <td>28</td>
-                    <td>2016-05-25</td>
-                </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>Bridie Kessler</td>
-                    <td>Developer</td>
-                    <td>35</td>
-                    <td>2014-12-05</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>Ashleigh Langosh</td>
-                    <td>Finance</td>
-                    <td>45</td>
-                    <td>2011-08-12</td>
-                </tr>
-                <tr>
-                    <th scope="row">4</th>
-                    <td>Angus Grady</td>
-                    <td>HR</td>
-                    <td>34</td>
-                    <td>2012-06-11</td>
-                </tr>
-                <tr>
-                    <th scope="row">5</th>
-                    <td>Raheem Lehner</td>
-                    <td>Dynamic Division Officer</td>
-                    <td>47</td>
-                    <td>2011-04-19</td>
-                </tr>
-            </tbody>
-        </table> *@
-        <!-- End Primary Color Bordered Table -->
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<h1 class="mb-4">Doctor List</h1>
+
+<!-- Search Form -->
+<form method="get" asp-action="DoctorList" class="mb-3">
+    <div class="input-group w-50">
+        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Doctor Name" />
+        <button type="submit" class="btn btn-outline-primary">Search</button>
     </div>
-</div>
+</form>
+
+<!-- Error Message -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!-- Doctor Table -->
+<table class="table table-bordered">
+    <thead >
+        <tr>
+            <th>Doctor ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Qualification</th>
+            <th>Specialization</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (DataRow dr in Model.Rows)
+        {
+            <tr>
+                <td>@dr["DoctorID"]</td>
+                <td>@dr["Name"]</td>
+                <td>@dr["Phone"]</td>
+                <td>@dr["Email"]</td>
+                <td>@dr["Qualification"]</td>
+                <td>@dr["Specialization"]</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a asp-controller="Doctor" asp-action="Index" asp-route-DoctorID="@dr["DoctorID"]" class="btn btn-primary btn-sm me-1">
+                        Edit
+                    </a>
+
+                    <!-- SweetAlert Delete Button -->
+                    <button type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="confirmDelete('@dr["DoctorID"]', '@dr["Name"]')">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- SweetAlert Delete Script -->
+<script>
+    function confirmDelete(doctorId, doctorName) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to delete doctor "${doctorName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/Doctor/DoctorDelete?DoctorID=${doctorId}`;
+            }
+        });
+    }
+</script>
