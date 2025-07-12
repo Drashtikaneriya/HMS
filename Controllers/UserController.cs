@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HMS.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -27,10 +28,32 @@ namespace HMS.Controllers
             return View(table);
 
         }
-        public IActionResult Index()
+        public IActionResult Index(UserAddEditModel UserAddEditModel)
         {
-            return View("UserAddEdit");
-        }
+            if (ModelState.IsValid)
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_User_Insert";
+
+                    command.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = UserAddEditModel.UserName;
+                    command.Parameters.Add("@Password", SqlDbType.NVarChar).Value = UserAddEditModel.Password;
+                    command.Parameters.Add("@Email", SqlDbType.NVarChar).Value = UserAddEditModel.Email;
+                    command.Parameters.Add("@MobileNo", SqlDbType.NVarChar).Value = UserAddEditModel.MobileNo;
+                    command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = UserAddEditModel.IsActive;
+                    command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = UserAddEditModel.Modified;
+
+
+                command.ExecuteNonQuery();
+
+                   return RedirectToAction("UserList");
+                }
+               
+                   return View("UserAddEdit");
+             }
         public IActionResult UserDelete(int UserID)
         {
             try

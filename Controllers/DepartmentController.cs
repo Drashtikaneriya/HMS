@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HMS.Models;
+using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -47,8 +48,27 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DepartmentList");
         }
-        public IActionResult Index()
+        public IActionResult Index(DepartmentAddEditModel DepartmentAddEditModel)
         {
+            if (ModelState.IsValid)
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Dept_Department_insert";
+
+                command.Parameters.Add("@DepartmentName", SqlDbType.NVarChar).Value = DepartmentAddEditModel.DepartmentName;
+                command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = DepartmentAddEditModel.Description;
+                command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = DepartmentAddEditModel.IsActive;
+                command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DepartmentAddEditModel.Modified;
+                command.Parameters.Add("@UserID", SqlDbType.Int).Value = DepartmentAddEditModel.UserID;
+
+                command.ExecuteNonQuery();
+
+                return RedirectToAction("DepartmentList");
+            }
             return View("DepartmentAddEdit");
         }
     }

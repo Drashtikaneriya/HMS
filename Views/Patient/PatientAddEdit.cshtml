@@ -10,7 +10,7 @@
                     <h4 class="mb-0 text-primary">Insert New Patient</h4>
                 </div>
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
-                    <form asp-action="InsertPatient" method="post" autocomplete="off">
+                    <form method="post" asp-controller="Patient" asp-action="Index">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Name" class="form-label fw-bold text-dark">Full Name</label>
@@ -18,7 +18,7 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="DateOfBirth" class="form-label fw-bold text-dark">Date of Birth</label>
+                                <label for="DateOfBirth" class="form-label fw-bold text-dark">DOB</label>
                                 <input type="date" class="form-control border-light rounded-3" id="DateOfBirth" name="DateOfBirth" style="background-color: #f5faff;" required>
                             </div>
 
@@ -61,6 +61,7 @@
                                 <label for="UserID" class="form-label fw-bold text-dark">User ID</label>
                                 <input type="number" class="form-control border-light rounded-3" id="UserID" name="UserID" placeholder="Enter linked user ID" style="background-color: #f5faff;" required>
                             </div>
+                            <input type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-dark">Is Active</label><br />
@@ -69,6 +70,7 @@
                                     <label class="form-check-label text-dark" for="IsActive">Yes</label>
                                 </div>
                             </div>
+
                         </div>
 
                         <div class="text-end mt-3">

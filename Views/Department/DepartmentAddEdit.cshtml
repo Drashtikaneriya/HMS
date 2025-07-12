@@ -10,7 +10,7 @@
                     <h4 class="mb-0 text-primary">Insert New Department</h4>
                 </div>
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
-                    <form asp-action="InsertDepartment" method="post" autocomplete="off">
+                    <form method="post" asp-controller="Department" asp-action="Index">
                         <div class="mb-3">
                             <label for="DepartmentName" class="form-label fw-bold text-dark">Department Name</label>
                             <input type="text" class="form-control border-light rounded-3" id="DepartmentName" name="DepartmentName" placeholder="Enter department name" style="background-color: #f5faff;" required>
@@ -21,18 +21,19 @@
                             <textarea class="form-control border-light rounded-3" id="Description" name="Description" rows="3" placeholder="Optional department description" style="background-color: #f5faff;"></textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="Modified" class="form-label fw-bold text-dark">Modified Date</label>
-                            <input type="datetime-local" class="form-control border-light rounded-3" id="Modified" name="Modified" style="background-color: #f5faff;"
-                                   value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
+                        <div class="col-md-6 mb-3">
+                            <label for="UserID" class="form-label fw-bold text-dark">User ID</label>
+                            <input type="number" class="form-control border-light rounded-3" id="UserID" name="UserID" placeholder="Enter linked user ID" style="background-color: #f5faff;" required>
                         </div>
+                        <input type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+
 
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="IsActive" name="IsActive" checked>
                             <label class="form-check-label fw-bold text-dark" for="IsActive">Is Active</label>
                         </div>
 
-                        <input type="hidden" name="UserID" value="@ViewBag.UserID" />
+                      
 
                         <div class="text-end">
                             <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>

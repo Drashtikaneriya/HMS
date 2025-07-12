@@ -11,7 +11,7 @@
                     <h4 class="mb-0 text-primary">Insert New Doctor</h4>
                 </div>
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
-                    <form asp-action="InsertDoctor" method="post" autocomplete="off">
+                    <form method="post" asp-controller="Doctor" asp-action="Index">
                         <div class="mb-3">
                             <label for="Name" class="form-label fw-bold text-dark">Doctor Name</label>
                             <input type="text" class="form-control border-light rounded-3" id="Name" name="Name" placeholder="Enter doctor name" style="background-color: #f5faff;" required>
@@ -36,6 +36,8 @@
                             <label for="Specialization" class="form-label fw-bold text-dark">Specialization</label>
                             <input type="text" class="form-control border-light rounded-3" id="Specialization" name="Specialization" placeholder="Enter specialization" style="background-color: #f5faff;" required>
                         </div>
+
+                        <input type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" />
 
                         <div class="mb-3">
                             <label for="UserID" class="form-label fw-bold text-dark">User ID</label>

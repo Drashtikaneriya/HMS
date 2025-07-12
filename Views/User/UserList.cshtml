@@ -11,7 +11,7 @@
 <h1 class="mb-4">User List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="UserList" class="mb-3">
+<form method="get">
     <div class="input-group w-50">
         <input type="text" name="searchTerm" class="form-control" placeholder="Search by User Name"  />
         <button type="submit" class="btn btn-outline-primary">Search</button>
@@ -28,6 +28,7 @@
 <table class="table table-bordered ">
     <thead>
         <tr>
+            <th>UserId</th>
             <th>User Name</th>
             <th>Email</th>
             <th>IsActive</th>
@@ -41,6 +42,7 @@
         @foreach (DataRow row in Model.Rows)
         {
             <tr>
+                <td>@row["UserID"]</td>
                 <td>@row["UserName"]</td>
                 <td>@row["Email"]</td>
                 <td>@row["IsActive"]</td>
