@@ -48,7 +48,7 @@ namespace HMS.Controllers
             }
             return RedirectToAction("PatientList");
         }
-        public IActionResult Index(PatientAddEditModel PatientAddEditModel)
+        public IActionResult PatientAddEdit(PatientAddEditModel PatientAddEditModel)
         {
             if (ModelState.IsValid)
             {
@@ -57,8 +57,15 @@ namespace HMS.Controllers
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_Pat_Patient_Insert";
-
+                if (PatientAddEditModel.patientID > 0)
+                {
+                    command.CommandText = "PR_Pat_patient_UpdateByPK";
+                    command.Parameters.AddWithValue("PatientID", PatientAddEditModel.patientID);
+                }
+                else
+                {
+                    command.CommandText = "PR_Pat_Patient_Insert";
+                }
                 command.Parameters.Add("@Name", SqlDbType.NVarChar).Value = PatientAddEditModel.Name;
                  command.Parameters.Add("@DateOfBirth", SqlDbType.DateTime).Value = PatientAddEditModel.DateOfBirth;
                 command.Parameters.Add("@Gender", SqlDbType.NVarChar).Value = PatientAddEditModel.Gender;
@@ -70,7 +77,7 @@ namespace HMS.Controllers
                 command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = PatientAddEditModel.IsActive;
 
                 command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = PatientAddEditModel.Modified;
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = PatientAddEditModel.UserId;
+                command.Parameters.Add("@UserID", SqlDbType.Int).Value = PatientAddEditModel.UserID;
 
                 command.ExecuteNonQuery();
 
@@ -78,5 +85,47 @@ namespace HMS.Controllers
             }
             return View("PatientAddEdit");
         }
+
+        public IActionResult PatientForm(int ID)
+        {
+            if (ID > 0)
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Pat_Patient_SelectByPK";
+
+                command.Parameters.AddWithValue("PatientID", ID);
+                SqlDataReader reader = command.ExecuteReader();
+
+                PatientAddEditModel model = new PatientAddEditModel();
+
+                while (reader.Read())
+                {
+                    model.patientID = Convert.ToInt32(reader["PatientID"]);
+                    model.UserID = Convert.ToInt32(reader["UserID"]);
+                    model.City = reader["City"].ToString();
+                    model.State = reader["State"].ToString();
+                    model.Name = reader["Name"].ToString();
+                    model.Gender = reader["Gender"].ToString();
+                    model.Phone = reader["Phone"].ToString();
+                    model.Email = reader["Email"].ToString();
+                    model.Address = reader["Address"].ToString();
+                    model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                    model.DateOfBirth = Convert.ToDateTime(reader["DateOfBirth"]);
+                    model.Modified = DateTime.Now;
+                }
+
+                return View("PatientAddEdit", model);
+            }
+            else
+            {
+                return View("PatientAddEdit", new PatientAddEditModel());
+            }
+        }
+
+
     }
 }

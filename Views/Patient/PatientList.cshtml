@@ -11,12 +11,16 @@
 <h1 class="mb-4">Patient List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="PatientList" class="mb-3">
-    <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Patient Name" />
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-    </div>
-</form>
+<div>
+    <form method="get" asp-action="DepartmentList" class="d-flex">
+        <div class="input-group">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
+    <br />
+</div>
+
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
@@ -25,47 +29,53 @@
 }
 
 <!-- Patient Table -->
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>PatientID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>DOB</th>
-            <th>Gender</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow dr in Model.Rows)
-        {
-            <tr>
-                <td>@dr["PatientID"]</td>
-                <td>@dr["UserName"]</td>
-                <td>@dr["Phone"]</td>
-                <td>@dr["Email"]</td>
-                <td>@dr["Address"]</td>
-                <td>@Convert.ToDateTime(dr["DateOfBirth"]).ToString("dd-MM-yyyy")</td>
-                <td>@dr["Gender"]</td>
-                <td>
-                    <!-- Edit Button -->
-                    <a asp-controller="Patient" asp-action="Index" asp-route-PatientID="@dr["PatientID"]" class="btn btn-success btn-sm me-1">
-                        Edit
-                    </a>
+<!-- Scrollable Table Container -->
 
-                    <!-- SweetAlert Delete Button -->
-                    <button type="button"
-                            class="btn btn-danger btn-sm"
-                            onclick="confirmDelete('@dr["PatientID"]', '@dr["UserName"]')">
-                        Delete
-                    </button>
-                </td>
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-primary">
+       
+            <tr>
+                <th>PatientID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>DOB</th>
+                <th>Gender</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
+                <tr>
+                    <td>@dr["PatientID"]</td>
+                    <td>@dr["Name"]</td>
+                    <td>@dr["Phone"]</td>
+                    <td>@dr["Email"]</td>
+                    <td>@dr["Address"]</td>
+                    <td>@Convert.ToDateTime(dr["DateOfBirth"]).ToString("dd-MM-yyyy")</td>
+                    <td>@dr["Gender"]</td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-1">
+                            <a asp-controller="Patient" asp-action="PatientForm" asp-route-ID="@dr["PatientID"]"
+                               class="btn btn-primary btn-sm" style="min-width: 60px; height: 32px;">
+                                Edit
+                            </a>
+                            <button type="button"
+                                    class="btn btn-danger btn-sm"
+                                    style="min-width: 60px; height: 32px;"
+                                    onclick="confirmDelete('@dr["PatientID"]', '@dr["Name"]')">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 
 <!-- SweetAlert Delete Script -->
 <script>

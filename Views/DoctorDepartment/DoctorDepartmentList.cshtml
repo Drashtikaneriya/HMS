@@ -11,12 +11,16 @@
 <h1 class="mb-4">Doctor-Department Mapping List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="DoctorDepartmentList" class="mb-3">
-    <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Doctor Name or Department" />
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-    </div>
-</form>
+<div>
+    <form method="get" asp-action="DepartmentList" class="d-flex">
+        <div class="input-group">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
+    <br />
+</div>
+
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
@@ -24,10 +28,10 @@
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<!-- Scrollable table with responsive layout -->
-<div style="width: 100%; overflow-x: auto;">
-    <table class="table table-bordered" style="min-width: 1200px;">
-        <thead>
+<!-- DoctorDepartment Table -->
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-primary">
+      
             <tr>
                 <th style="min-width: 150px;">DoctorDept ID</th>
                 <th style="min-width: 150px;">Doctor Name</th>
@@ -57,8 +61,8 @@
                     <td>
                         <!-- Edit Button -->
                         <a asp-controller="DoctorDepartment"
-                           asp-action="DoctorDepartment"
-                           asp-route-DoctorDepartmentID="@dr["DoctorDepartmentID"]"
+                       asp-action="DoctorDepartmentForm"
+                           asp-route-ID="@dr["DoctorDepartmentID"]"
                            class="btn btn-primary btn-sm me-1">
                             Edit
                         </a>

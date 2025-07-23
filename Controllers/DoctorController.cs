@@ -49,7 +49,47 @@ namespace Hospital_Management_System.Controllers
             }
             return RedirectToAction("DoctorList");
         }
-        public IActionResult Index(DoctorAddEditModel DoctorAddEditModel)
+        
+        public IActionResult DoctorForm(int ID)
+        {
+
+            if (ID > 0)
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Doc_Doctor_SelectByPK";
+
+                command.Parameters.AddWithValue("DoctorID", ID);
+                SqlDataReader reader = command.ExecuteReader();
+
+
+                DoctorAddEditModel model = new DoctorAddEditModel();
+
+                while (reader.Read())
+                {
+                    model.DoctorID=Convert.ToInt32(reader["DoctorID"]);
+                    model.Name = reader["Name"].ToString();
+                    model.Phone = reader["Phone"].ToString();
+                    model.Email = reader["Email"].ToString();
+                    model.Qualification = reader["Qualification"].ToString();
+                    model.Specialization = reader["Specialization"].ToString();
+                    model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                    model.UserID=Convert.ToInt32(reader["UserId"]);
+                }
+
+                return View("DoctorAddEdit", model);
+            }
+            else
+            {
+                return View("DoctorAddEdit", new DoctorAddEditModel());
+            }
+        }
+
+        
+        public IActionResult DoctorAddEdit(DoctorAddEditModel DoctorAddEditModel)
         {
             if (ModelState.IsValid)
             {
@@ -58,7 +98,16 @@ namespace Hospital_Management_System.Controllers
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_Doc_Doctor_Insert";
+
+                if (DoctorAddEditModel.DoctorID > 0)
+                {
+                    command.CommandText = "PR_Doc_Doctor_UpdateByPK";
+                    command.Parameters.AddWithValue("DoctorID", DoctorAddEditModel.DoctorID);
+                }
+                else
+                {
+                    command.CommandText = "PR_Doc_Doctor_Insert";
+                }
 
                 command.Parameters.Add("@Name", SqlDbType.NVarChar).Value = DoctorAddEditModel.Name;
                 command.Parameters.Add("@Phone", SqlDbType.NVarChar).Value = DoctorAddEditModel.Phone;
@@ -73,10 +122,8 @@ namespace Hospital_Management_System.Controllers
 
                 return RedirectToAction("DoctorList");
             }
-
-            return View("DoctorAddEdit");
+            return RedirectToAction("DoctorList");
         }
-
 
 
     }

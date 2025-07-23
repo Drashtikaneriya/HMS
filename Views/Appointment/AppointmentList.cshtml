@@ -11,12 +11,15 @@
 <h1 class="mb-4">Appointment List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="AppointmentList" class="mb-3">
-    <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Patient Name" value="@Context.Request.Query["searchTerm"]" />
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-    </div>
-</form>
+<div>
+    <form method="get" asp-action="DepartmentList" class="d-flex">
+        <div class="input-group">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
+    <br />
+</div>
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
@@ -25,8 +28,9 @@
 }
 
 <!-- Appointment Table -->
-<table class="table table-bordered">
-    <thead >
+
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-primary">
         <tr>
             <th>Appointment ID</th>
             <th>Patient Name</th>
@@ -49,7 +53,7 @@
                 <td>@Convert.ToDateTime(dr["AppointmentDate"]).ToString("dd-MM-yyyy")</td>
                 <td>
                     <!-- Edit Button -->
-                    <a asp-controller="Appointment" asp-action="Edit" asp-route-AppointmentID="@dr["AppointmentID"]" class="btn btn-success btn-sm me-1">
+                    <a asp-controller="Appointment" asp-action="AppointmentForm" asp-route-ID="@dr["AppointmentID"]" class="btn btn-success btn-sm me-1">
                         Edit
                     </a>
 

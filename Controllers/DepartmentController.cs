@@ -1,5 +1,7 @@
 ﻿using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -8,6 +10,7 @@ namespace HMS.Controllers
     public class DepartmentController : Controller
     {
         private IConfiguration configuration;
+        private readonly IConfiguration _configuration;
 
         public DepartmentController(IConfiguration _configuration)
         {
@@ -48,7 +51,42 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DepartmentList");
         }
-        public IActionResult Index(DepartmentAddEditModel DepartmentAddEditModel)
+        public IActionResult DepartmentForm(int ID)
+        {
+            if (ID > 0)
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_Dept_Department_SelectByPK";
+
+                command.Parameters.AddWithValue("DepartmentID", ID);
+                SqlDataReader reader = command.ExecuteReader();
+
+
+                DepartmentAddEditModel model = new DepartmentAddEditModel();
+
+                while (reader.Read())
+                {
+                    model.DepartmentID = ID;
+                    model.UserID = Convert.ToInt32(reader["UserID"]);
+                    model.DepartmentName = reader["DepartmentName"].ToString();
+                    model.Description = reader["Description"].ToString();
+                    model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                }
+
+                return View("DepartmentAddEdit", model);
+            }
+            else
+            {
+                return View("DepartmentAddEdit", new DepartmentAddEditModel());
+            }
+        }
+      
+   
+        public IActionResult DepartmentAddEdit(DepartmentAddEditModel DepartmentAddEditModel)
         {
             if (ModelState.IsValid)
             {
@@ -57,7 +95,16 @@ namespace HMS.Controllers
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_Dept_Department_insert";
+               
+                if (DepartmentAddEditModel.DepartmentID > 0)
+                {
+                    command.CommandText = "PR_Dept_Department_UpdateByPK";
+                    command.Parameters.AddWithValue("DepartmentID", DepartmentAddEditModel.DepartmentID);
+                }
+                else
+                {
+                    command.CommandText = "PR_Dept_Department_Insert";
+                }
 
                 command.Parameters.Add("@DepartmentName", SqlDbType.NVarChar).Value = DepartmentAddEditModel.DepartmentName;
                 command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = DepartmentAddEditModel.Description;

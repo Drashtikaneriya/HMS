@@ -1,4 +1,4 @@
-﻿
+﻿@model HMS.Models.DoctorDepartmentModelAddEdit
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -8,22 +8,29 @@
                     <h4 class="mb-0 text-primary">Assign Doctor to Department</h4>
                 </div>
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
-                    <form method="post" asp-controller="DoctorDepartment" asp-action="Index">
+                    <form method="post" asp-controller="DoctorDepartment" asp-action="DoctorDepartmentAddEdit">
                         <div class="mb-3">
+                            <input asp-for="DoctorDepartmentID" type="hidden" />
                             <label for="DoctorID" class="form-label fw-bold text-dark">Doctor ID</label>
-                            <input type="number" class="form-control border-light rounded-3" id="DoctorID" name="DoctorID" placeholder="Enter Doctor ID" style="background-color: #f5faff;" required />
+                            <input  asp-for="DoctorID" type="number" class="form-control border-light rounded-3" id="DoctorID" name="DoctorID" placeholder="Enter Doctor ID" style="background-color: #f5faff;" required />
                         </div>
 
                         <div class="mb-3">
                             <label for="DepartmentID" class="form-label fw-bold text-dark">Department ID</label>
-                            <input type="number" class="form-control border-light rounded-3" id="DepartmentID" name="DepartmentID" placeholder="Enter Department ID" style="background-color: #f5faff;" required />
+                            <input asp-for="DepartmentID" type="number" class="form-control border-light rounded-3" id="DepartmentID" name="DepartmentID" placeholder="Enter Department ID" style="background-color: #f5faff;" required />
                         </div>
+                 @*        <input type="hidden" name="Created" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+
                    
-                        <input type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-dd")" /> *@
+                        <input type="hidden" name="Created" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+
+                        <input asp-for="Modified" type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+
 
                         <div class="col-md-6 mb-3">
                             <label for="UserID" class="form-label fw-bold text-dark">User ID</label>
-                            <input type="number" class="form-control border-light rounded-3" id="UserID" name="UserID" placeholder="Enter linked user ID" style="background-color: #f5faff;" required>
+                            <input asp-for="UserID" type="number" class="form-control border-light rounded-3" id="UserID" name="UserID" placeholder="Enter linked user ID" style="background-color: #f5faff;" required>
                         </div>
 
                         <div class="text-end">

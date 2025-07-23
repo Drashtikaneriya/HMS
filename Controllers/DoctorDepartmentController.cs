@@ -49,27 +49,110 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DoctorDepartmentList");
         }
-        public IActionResult Index(DoctorDepartmentModelAddEdit DoctorDepartmentModelAddEdit)
+        [HttpPost]
+        public IActionResult DoctorDepartmentAddEdit(DoctorDepartmentModelAddEdit DoctorDepartmentModelAddEdit)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+            {
+                return View("DoctorDepartmentAddEdit", DoctorDepartmentModelAddEdit);
+            }
+
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            SqlCommand command = connection.CreateCommand();
+            command.CommandType = CommandType.StoredProcedure;
+
+            if (DoctorDepartmentModelAddEdit.DoctorDepartmentID > 0)
+            {
+                command.CommandText = "PR_DocDept_DoctorDepartmen_UpdateByPK";
+                command.Parameters.AddWithValue("@DoctorDepartmentID", DoctorDepartmentModelAddEdit.DoctorDepartmentID);
+            }
+            else
+            {
+                command.CommandText = "PR_DocDept_DoctorDepartment_Insert";
+            }
+
+            command.Parameters.Add("@DoctorID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DoctorID;
+            command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DepartmentID;
+            command.Parameters.Add("@Created", SqlDbType.DateTime).Value = DoctorDepartmentModelAddEdit.Created == DateTime.MinValue ? DateTime.Now : DoctorDepartmentModelAddEdit.Created;
+            command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DateTime.Now;
+            command.Parameters.Add("@UserID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.UserID;
+
+            command.ExecuteNonQuery();
+
+            return RedirectToAction("DoctorDepartmentList");
+        }
+
+        //public IActionResult DoctorDepartmentAddEdit(DoctorDepartmentModelAddEdit DoctorDepartmentModelAddEdit)
+        //{
+        //    if (DoctorDepartmentModelAddEdit.DoctorDepartmentID == 0)
+        //    {
+        //        return View("DoctorDepartmentAddEdit");
+
+        //        }
+        //        if (ModelState.IsValid)
+        //          {
+        //        string connectionString = this.configuration.GetConnectionString("ConnectionString");
+        //        SqlConnection connection = new SqlConnection(connectionString);
+        //        connection.Open();
+        //        SqlCommand command = connection.CreateCommand();
+        //        command.CommandType = CommandType.StoredProcedure;
+
+
+        //        if (DoctorDepartmentModelAddEdit.DoctorDepartmentID > 0)
+        //        {
+        //            command.CommandText = "PR_DocDept_DoctorDepartmen_UpdateByPK";
+        //            command.Parameters.AddWithValue("DoctorDepartmentID", DoctorDepartmentModelAddEdit.DoctorDepartmentID);
+        //        }
+        //        else
+        //        {
+        //            command.CommandText = "PR_DocDept_DoctorDepartment_Insert";
+        //        }
+        //        command.Parameters.Add("@DoctorID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DoctorID;
+        //        command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DepartmentID;
+        //        command.Parameters.Add("@Created", SqlDbType.DateTime).Value = DateTime.Now;
+        //        command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DateTime.Now;
+        //        command.Parameters.Add("@UserID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.UserID;
+
+        //        command.ExecuteNonQuery();
+
+        //        return RedirectToAction("DoctorDepartmentList");
+        //    }
+        //    return View("DoctorDepartmentList");
+        //}
+        public IActionResult DoctorDepartmentForm(int ID)
+        {
+
+            if (ID > 0)
             {
                 string connectionString = this.configuration.GetConnectionString("ConnectionString");
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_DocDept_DoctorDepartment_Insert";
+                command.CommandText = "PR_DocDept_DoctorDepartment_SelectByPK";
 
-                command.Parameters.Add("@DoctorID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DoctorID;
-                command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.DepartmentID;
-                command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DoctorDepartmentModelAddEdit.Modified;
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = DoctorDepartmentModelAddEdit.UserID;
+                command.Parameters.AddWithValue("DoctorDepartmentID", ID);
+                SqlDataReader reader = command.ExecuteReader();
 
-                command.ExecuteNonQuery();
 
-                return RedirectToAction("DoctorDepartmentList");
+                DoctorDepartmentModelAddEdit model = new DoctorDepartmentModelAddEdit();
+
+                while (reader.Read())
+                {
+                    model.UserID = Convert.ToInt32(reader["UserID"]);
+                    model.DoctorID = Convert.ToInt32(reader["DoctorID"]);
+                    model.DepartmentID= Convert.ToInt32(reader["DepartmentID"]);
+                    model.Modified = DateTime.Now;
+                }
+
+                return View("DoctorDepartmentAddEdit", model);
             }
-            return View("DoctorDepartmentAddEdit");
+            else
+            {
+                return View("DoctorDepartmentList", new DoctorDepartmentModelAddEdit());
+            }
         }
     }
 }

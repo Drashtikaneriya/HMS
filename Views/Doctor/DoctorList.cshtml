@@ -11,22 +11,24 @@
 <h1 class="mb-4">Doctor List</h1>
 
 <!-- Search Form -->
-<form method="get" asp-action="DoctorList" class="mb-3">
-    <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by Doctor Name" />
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-    </div>
-</form>
+<div>
+    <form method="get" asp-action="DepartmentList" class="d-flex">
+        <div class="input-group">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
+    <br />
+</div>
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
-
-<!-- Doctor Table -->
-<table class="table table-bordered">
-    <thead >
+<!-- doctor Table -->
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-primary">
         <tr>
             <th>Doctor ID</th>
             <th>Doctor Name</th>
@@ -49,7 +51,7 @@
                 <td>@dr["Specialization"]</td>
                 <td>
                     <!-- Edit Button -->
-                    <a asp-controller="Doctor" asp-action="Index" asp-route-DoctorID="@dr["DoctorID"]" class="btn btn-primary btn-sm me-1">
+                    <a asp-controller="Doctor" asp-action="DoctorForm" asp-route-ID=@dr["DoctorID"] class="btn btn-primary btn-sm me-1">
                         Edit
                     </a>
 

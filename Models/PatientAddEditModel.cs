@@ -2,6 +2,8 @@
 {
     public class PatientAddEditModel
     {
+        public int? patientID {  get; set; }
+
         public  string Name {  get; set; }  
         public DateTime DateOfBirth { get; set; }   
         public string Gender { get; set; }
@@ -12,6 +14,6 @@
         public string State  { get; set; }
         public bool IsActive { get; set; }
         public DateTime Modified {  get; set; }
-        public int UserId {  get; set; }
+        public int UserID{  get; set; }
     }
 }

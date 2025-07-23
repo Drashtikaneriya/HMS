@@ -1,9 +1,7 @@
 ﻿@model DataTable
 @using System.Data
 
-@{
-    ViewData["Title"] = "User List";
-}
+
 
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -11,12 +9,16 @@
 <h1 class="mb-4">User List</h1>
 
 <!-- Search Form -->
-<form method="get">
-    <div class="input-group w-50">
-        <input type="text" name="searchTerm" class="form-control" placeholder="Search by User Name"  />
-        <button type="submit" class="btn btn-outline-primary">Search</button>
-    </div>
-</form>
+<div>
+    <form method="get" asp-action="DepartmentList" class="d-flex">
+        <div class="input-group">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
+    <br />
+</div>
+
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
@@ -24,9 +26,8 @@
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
 
-<!-- User Table -->
-<table class="table table-bordered ">
-    <thead>
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-primary">
         <tr>
             <th>UserId</th>
             <th>User Name</th>
@@ -60,7 +61,7 @@
                 <td>@row["Modified"]</td>
                 <td>
                     <!-- Edit Button -->
-                    <a asp-controller="User" asp-action="Index" asp-route-UserID="@row["UserID"]" class="btn btn-primary btn-sm me-1">Edit</a>
+                    <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row["UserID"]" class="btn btn-primary btn-sm me-1">Edit</a>
 
                     <!-- SweetAlert Delete Button -->
                     <button type="button"
