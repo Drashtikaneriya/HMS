@@ -1,5 +1,6 @@
 ﻿using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -109,7 +110,66 @@ namespace HMS.Controllers
             return RedirectToAction("UserList");
         }
 
+        [HttpPost]
+        [Route("delete-all")]
+        public IActionResult DeleteAllUsers()
+        {
+            try
+            {
+                string connectionString = configuration.GetConnectionString("ConnectionString"); // ✅ Fixed
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+                    SqlCommand cmd = new SqlCommand("PR_User_DeleteAll", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.ExecuteNonQuery();
+                }
 
+                TempData["SuccessMessage"] = "✅ All users deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error: " + ex.Message;
+            }
+
+            return RedirectToAction("UserList");
+        }
+
+        [HttpPost]
+        [Route("DeleteSelectedUsers")]
+        public IActionResult DeleteSelectedUsers(List<int> SelectedUserIds)
+        {
+            if (SelectedUserIds == null || SelectedUserIds.Count == 0)
+            {
+                TempData["ErrorMessage"] = "No users selected for deletion.";
+                return RedirectToAction("UserList");
+            }
+
+            try
+            {
+                string connectionString = configuration.GetConnectionString("ConnectionString");
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+
+                    foreach (var userId in SelectedUserIds)
+                    {
+                        SqlCommand cmd = new SqlCommand("PR_User_User_Delete", con);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@UserID", userId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                TempData["SuccessMessage"] = "Selected users deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error: " + ex.Message;
+            }
+
+            return RedirectToAction("UserList");
+        }
 
         #region Delete
         [Route("user-delete")]
@@ -125,6 +185,7 @@ namespace HMS.Controllers
                 command.CommandText = "PR_User_User_Delete";
                 command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
                 command.ExecuteNonQuery();
+                TempData["SuccessMessage"] = "✅ Users Deleted Successfully.";
             }
             catch (Exception ex)
             {

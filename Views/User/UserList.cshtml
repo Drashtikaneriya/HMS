@@ -1,82 +1,100 @@
 ﻿@model DataTable
 @using System.Data
 
-
+<h1 class="mb-4">User List</h1>
 
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<h1 class="mb-4">User List</h1>
-
 <!-- Search Form -->
 <div>
-    <form method="get" asp-action="DepartmentList" class="d-flex">
+    <form method="get" asp-action="UserList" class="d-flex">
         <div class="input-group">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by User Name" />
             <button type="submit" class="btn btn-outline-primary">Search</button>
         </div>
     </form>
     <br />
 </div>
 
-
-<!-- Error Message -->
+<!-- Success / Error Messages -->
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
-<table class="table table-bordered table-hover shadow-sm">
-    <thead class="table-primary">
-        <tr>
-            <th>UserId</th>
-            <th>User Name</th>
-            <th>Email</th>
-            <th>IsActive</th>
-            <th>Created</th>
-            <th>Status</th>
-            <th>Modified</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow row in Model.Rows)
-        {
-            <tr>
-                <td>@row["UserID"]</td>
-                <td>@row["UserName"]</td>
-                <td>@row["Email"]</td>
-                <td>@row["IsActive"]</td>
-                <td>@row["Created"]</td>
-                <td>
-                    @if (Convert.ToBoolean(row["IsActive"]))
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Not Active</span>
-                    }
-                </td>
-                <td>@row["Modified"]</td>
-                <td>
-                    <!-- Edit Button -->
-                    <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row["UserID"]" class="btn btn-primary btn-sm me-1">Edit</a>
+<!-- ✅ Delete Selected Users Button -->
+<div class="mb-3">
+    <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">
+        🗑 Delete Selected Users
+    </button>
+</div>
 
-                    <!-- SweetAlert Delete Button -->
-                    <button type="button"
-                            class="btn btn-danger btn-sm"
-                            onclick="confirmDelete('@row["UserID"]', '@row["UserName"]')">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- ✅ Table Wrapper with Horizontal Scroll -->
+<div class="table-responsive" style="overflow-x:auto; max-width:100%;">
+    <form id="deleteSelectedForm" asp-controller="User" asp-action="DeleteSelectedUsers" method="post">
+        <table class="table table-bordered table-hover shadow-sm">
+            <thead class="table-primary">
+                <tr>
+                    <th><input type="checkbox" id="selectAll" /></th>
+                    <th style="min-width: 100px;">UserId</th>
+                    <th style="min-width: 150px;">User Name</th>
+                    <th style="min-width: 200px;">Email</th>
+                    <th style="min-width: 100px;">IsActive</th>
+                    <th style="min-width: 120px;">Created</th>
+                    <th style="min-width: 120px;">Status</th>
+                    <th style="min-width: 120px;">Modified</th>
+                    <th style="min-width: 160px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow row in Model.Rows)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="SelectedUserIds" value="@row["UserID"]" class="selectCheckbox" />
+                        </td>
+                        <td>@row["UserID"]</td>
+                        <td>@row["UserName"]</td>
+                        <td>@row["Email"]</td>
+                        <td>@row["IsActive"]</td>
+                        <td>@row["Created"]</td>
+                        <td>
+                            @if (Convert.ToBoolean(row["IsActive"]))
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Not Active</span>
+                            }
+                        </td>
+                        <td>@row["Modified"]</td>
+                        <td>
+                            <!-- Edit Button -->
+                            <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row["UserID"]"
+                               class="btn btn-primary btn-sm me-1">Edit</a>
 
-<!-- SweetAlert Delete Script -->
+                            <!-- SweetAlert Delete Button -->
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    onclick="confirmDelete('@row["UserID"]', '@row["UserName"]')">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<!-- SweetAlert Scripts -->
 <script>
+    // ✅ Delete Single User
     function confirmDelete(userId, userName) {
         Swal.fire({
             title: 'Are you sure?',
@@ -89,7 +107,37 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/User/UserDelete?UserID=${userId}`;
+                window.location.href = `/user/user-delete?UserID=${userId}`;
+            }
+        });
+    }
+
+    // ✅ Select / Deselect All Checkboxes
+    document.getElementById("selectAll").addEventListener("change", function () {
+        let checkboxes = document.querySelectorAll(".selectCheckbox");
+        checkboxes.forEach(chk => chk.checked = this.checked);
+    });
+
+    // ✅ Delete Selected Users
+    function confirmDeleteSelected() {
+        let selected = document.querySelectorAll(".selectCheckbox:checked");
+        if (selected.length === 0) {
+            Swal.fire('No Users Selected', 'Please select at least one user to delete.', 'info');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Delete Selected Users?',
+            text: '⚠️ This will permanently remove selected users from the system!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete selected!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteSelectedForm').submit();
             }
         });
     }

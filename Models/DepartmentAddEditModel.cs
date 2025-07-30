@@ -4,20 +4,26 @@ namespace HMS.Models
 {
     public class DepartmentAddEditModel
     {
-        
-            public int DepartmentID { get; set; }
 
-            [Required(ErrorMessage = "Department name is required")]
-            public string DepartmentName { get; set; }
+        public int? DepartmentID { get; set; }
 
-            public string? Description { get; set; }
+        [Required]
+        [StringLength(100)]
+        public required string DepartmentName { get; set; }
 
-            [Required(ErrorMessage = "User selection is required")]
-            public int? UserID { get; set; }
+        [StringLength(250)]
+        public required string Description { get; set; }
 
-            public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
-            public DateTime Modified { get; set; }
-        }
+        [Required]
+        public DateTime Created { get; set; } = DateTime.Now;
+
+        [Required]
+        public DateTime Modified { get; set; } = DateTime.Now;
+
+        [Required]
+        public int UserID { get; set; }
+       }   
     }
 

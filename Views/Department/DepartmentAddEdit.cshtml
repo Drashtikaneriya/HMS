@@ -12,10 +12,12 @@
                 <div class="card-header text-center rounded-top-4" style="background-color: #eaf6ff;">
                     <h4 class="mb-0 text-primary">Insert New Department</h4>
                 </div>
-                    <input asp-for="DepartmentID" type="hidden" />
+                   
                   
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
                     <form method="post" asp-controller="Department" asp-action="DepartmentAddEdit">
+                            <input asp-for="DepartmentID" type="hidden" />
+
                         <div class="mb-3">
                             <label for="DepartmentName" class="form-label fw-bold text-dark">Department Name</label>
                             <input asp-for="DepartmentName" type="text" class="form-control border-light rounded-3" id="DepartmentName" name="DepartmentName" placeholder="Enter department name" style="background-color: #f5faff;" required>

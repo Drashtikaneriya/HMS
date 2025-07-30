@@ -51,6 +51,40 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DepartmentList");
         }
+        //public IActionResult DepartmentForm(int ID)
+        //{
+        //    if (ID > 0)
+        //    {
+        //        string connectionString = this.configuration.GetConnectionString("ConnectionString");
+        //        SqlConnection connection = new SqlConnection(connectionString);
+        //        connection.Open();
+        //        SqlCommand command = connection.CreateCommand();
+        //        command.CommandType = CommandType.StoredProcedure;
+        //        command.CommandText = "PR_Dept_Department_SelectByPK";
+
+        //        command.Parameters.AddWithValue("DepartmentID", ID);
+        //        SqlDataReader reader = command.ExecuteReader();
+
+
+        //        DepartmentAddEditModel model = new DepartmentAddEditModel();
+
+        //        while (reader.Read())
+        //        {
+        //            //model.DepartmentID = ID;
+        //            model.UserID = Convert.ToInt32(reader["UserID"]);
+        //            model.DepartmentName = reader["DepartmentName"].ToString();
+        //            model.Description = reader["Description"].ToString();
+        //            model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+        //        }
+
+        //        return View("DepartmentAddEdit", model);
+        //    }
+        //    else
+        //    {
+        //        return View("DepartmentAddEdit", new DepartmentAddEditModel());
+        //    }
+        //}  
+        #region Department Fill Form
         public IActionResult DepartmentForm(int ID)
         {
             if (ID > 0)
@@ -66,7 +100,12 @@ namespace HMS.Controllers
                 SqlDataReader reader = command.ExecuteReader();
 
 
-                DepartmentAddEditModel model = new DepartmentAddEditModel();
+                DepartmentAddEditModel model = new DepartmentAddEditModel
+                {
+                    DepartmentName = "", // temporary value
+                    Description = ""     // temporary value
+                };
+
 
                 while (reader.Read())
                 {
@@ -81,42 +120,94 @@ namespace HMS.Controllers
             }
             else
             {
-                return View("DepartmentAddEdit", new DepartmentAddEditModel());
+                return View("DepartmentAddEdit", new DepartmentAddEditModel
+                {
+                    DepartmentName = "",
+                    Description = ""
+                });
             }
         }
-      
-   
-        public IActionResult DepartmentAddEdit(DepartmentAddEditModel DepartmentAddEditModel)
+
+        #endregion
+
+        public IActionResult DepartmentAddEdit(DepartmentAddEditModel departmentModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                string connectionString = this.configuration.GetConnectionString("ConnectionString");
-                SqlConnection connection = new SqlConnection(connectionString);
+                // View what's going wrong
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+
+                return View("DepartmentAddEdit", departmentModel);
+            }
+
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
-               
-                if (DepartmentAddEditModel.DepartmentID > 0)
-                {
-                    command.CommandText = "PR_Dept_Department_UpdateByPK";
-                    command.Parameters.AddWithValue("DepartmentID", DepartmentAddEditModel.DepartmentID);
-                }
-                else
+
+                if (departmentModel.DepartmentID == null)
                 {
                     command.CommandText = "PR_Dept_Department_Insert";
                 }
+                else
+                {
+                    command.CommandText = "PR_Dept_Department_UpdateByPK";
+                    command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = departmentModel.DepartmentID;
+                }
 
-                command.Parameters.Add("@DepartmentName", SqlDbType.NVarChar).Value = DepartmentAddEditModel.DepartmentName;
-                command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = DepartmentAddEditModel.Description;
-                command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = DepartmentAddEditModel.IsActive;
-                command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DepartmentAddEditModel.Modified;
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = DepartmentAddEditModel.UserID;
+                departmentModel.Modified = DateTime.Now;
+
+                command.Parameters.AddWithValue("@DepartmentName", departmentModel.DepartmentName);
+                command.Parameters.AddWithValue("@Description", departmentModel.Description);
+                command.Parameters.AddWithValue("@IsActive", departmentModel.IsActive);
+                command.Parameters.AddWithValue("@Modified", departmentModel.Modified);
+                command.Parameters.AddWithValue("@UserID", departmentModel.UserID);
 
                 command.ExecuteNonQuery();
-
-                return RedirectToAction("DepartmentList");
             }
-            return View("DepartmentAddEdit");
+
+            return RedirectToAction("DepartmentList");
         }
+
+
+
+
+        //public IActionResult DepartmentAddEdit(DepartmentAddEditModel DepartmentAddEditModel)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        string connectionString = this.configuration.GetConnectionString("ConnectionString");
+        //        SqlConnection connection = new SqlConnection(connectionString);
+        //        connection.Open();
+        //        SqlCommand command = connection.CreateCommand();
+        //        command.CommandType = CommandType.StoredProcedure;
+
+        //        if (DepartmentAddEditModel.DepartmentID >0)
+        //        {
+        //            command.CommandText = "PR_Dept_Department_UpdateByPK";
+        //            command.Parameters.AddWithValue("DepartmentID", DepartmentAddEditModel.DepartmentID);
+        //        }
+        //        else
+        //        {
+        //            command.CommandText = "PR_Dept_Department_Insert";
+        //        }
+
+        //        command.Parameters.Add("@DepartmentName", SqlDbType.NVarChar).Value = DepartmentAddEditModel.DepartmentName;
+        //        command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = DepartmentAddEditModel.Description;
+        //        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = DepartmentAddEditModel.IsActive;
+        //        command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DepartmentAddEditModel.Modified;
+        //        command.Parameters.Add("@UserID", SqlDbType.Int).Value = DepartmentAddEditModel.UserID;
+
+        //        command.ExecuteNonQuery();
+
+        //        return RedirectToAction("DepartmentList");
+        //    }
+        //    return View("DepartmentAddEdit");
+        //}
     }
 }
