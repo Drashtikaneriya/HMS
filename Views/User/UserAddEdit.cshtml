@@ -48,6 +48,11 @@
                             <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
                         </div>
                     </form>
+                    @section Scripts {
+                    @{
+                            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                        }
+                    }
                 </div>
                 <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
                     © HMS System • 2025

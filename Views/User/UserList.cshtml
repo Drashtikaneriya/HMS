@@ -1,12 +1,11 @@
-﻿@model DataTable
-@using System.Data
+﻿@model X.PagedList.IPagedList<HMS.Models.UserAddEditModel>
+@using X.PagedList.Mvc.Core;
 
 <h1 class="mb-4">User List</h1>
 
-<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- Search Form -->
+<!-- ✅ Search Form -->
 <div>
     <form method="get" asp-action="UserList" class="d-flex">
         <div class="input-group">
@@ -17,7 +16,17 @@
     <br />
 </div>
 
-<!-- Success / Error Messages -->
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success me-2" href="/user/ExportToCSV">⬇️ Download CSV</a>
+        <a class="btn btn-success" href="/user/ExportToExcel">📂 Download Excel</a>
+    </div>
+    <div>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Users</button>
+    </div>
+</div>
+
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
@@ -27,44 +36,36 @@
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 
-<!-- ✅ Delete Selected Users Button -->
-<div class="mb-3">
-    <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">
-        🗑 Delete Selected Users
-    </button>
-</div>
-
-<!-- ✅ Table Wrapper with Horizontal Scroll -->
 <div class="table-responsive" style="overflow-x:auto; max-width:100%;">
     <form id="deleteSelectedForm" asp-controller="User" asp-action="DeleteSelectedUsers" method="post">
         <table class="table table-bordered table-hover shadow-sm">
             <thead class="table-primary">
                 <tr>
                     <th><input type="checkbox" id="selectAll" /></th>
-                    <th style="min-width: 100px;">UserId</th>
-                    <th style="min-width: 150px;">User Name</th>
-                    <th style="min-width: 200px;">Email</th>
-                    <th style="min-width: 100px;">IsActive</th>
-                    <th style="min-width: 120px;">Created</th>
-                    <th style="min-width: 120px;">Status</th>
-                    <th style="min-width: 120px;">Modified</th>
-                    <th style="min-width: 160px;">Actions</th>
+                    <th>UserId</th>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>IsActive</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Modified</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (DataRow row in Model.Rows)
+                @foreach (var row in Model)
                 {
                     <tr>
                         <td>
-                            <input type="checkbox" name="SelectedUserIds" value="@row["UserID"]" class="selectCheckbox" />
+                            <input type="checkbox" name="SelectedUserIds" value="@row.UserID" class="selectCheckbox" />
                         </td>
-                        <td>@row["UserID"]</td>
-                        <td>@row["UserName"]</td>
-                        <td>@row["Email"]</td>
-                        <td>@row["IsActive"]</td>
-                        <td>@row["Created"]</td>
+                        <td>@row.UserID</td>
+                        <td>@row.UserName</td>
+                        <td>@row.Email</td>
+                        <td>@row.IsActive</td>
+                        <td>@row.Created.ToString("yyyy-MM-dd")</td>
                         <td>
-                            @if (Convert.ToBoolean(row["IsActive"]))
+                            @if (row.IsActive)
                             {
                                 <span class="badge bg-success">Active</span>
                             }
@@ -73,15 +74,13 @@
                                 <span class="badge bg-secondary">Not Active</span>
                             }
                         </td>
-                        <td>@row["Modified"]</td>
+                        <td>@row.Modified.ToString("yyyy-MM-dd")</td>
                         <td>
-                            <!-- Edit Button -->
-                            <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row["UserID"]"
+                            <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row.UserID"
                                class="btn btn-primary btn-sm me-1">Edit</a>
 
-                            <!-- SweetAlert Delete Button -->
                             <button type="button" class="btn btn-danger btn-sm"
-                                    onclick="confirmDelete('@row["UserID"]', '@row["UserName"]')">
+                                    onclick="confirmDelete('@row.UserID', '@row.UserName')">
                                 Delete
                             </button>
                         </td>
@@ -92,9 +91,12 @@
     </form>
 </div>
 
-<!-- SweetAlert Scripts -->
+<!-- ✅ Pagination Controls (outside table) -->
+<div class="d-flex justify-content-center">
+    @Html.PagedListPager(Model, page => Url.Action("UserList"  ,  new { page }))
+</div>
+
 <script>
-    // ✅ Delete Single User
     function confirmDelete(userId, userName) {
         Swal.fire({
             title: 'Are you sure?',
@@ -112,20 +114,17 @@
         });
     }
 
-    // ✅ Select / Deselect All Checkboxes
     document.getElementById("selectAll").addEventListener("change", function () {
         let checkboxes = document.querySelectorAll(".selectCheckbox");
         checkboxes.forEach(chk => chk.checked = this.checked);
     });
 
-    // ✅ Delete Selected Users
     function confirmDeleteSelected() {
         let selected = document.querySelectorAll(".selectCheckbox:checked");
         if (selected.length === 0) {
             Swal.fire('No Users Selected', 'Please select at least one user to delete.', 'info');
             return;
         }
-
         Swal.fire({
             title: 'Delete Selected Users?',
             text: '⚠️ This will permanently remove selected users from the system!',

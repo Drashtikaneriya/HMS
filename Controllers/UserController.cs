@@ -1,48 +1,64 @@
-﻿using HMS.Models;
+﻿using ClosedXML.Excel;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
+using System.Text;
+using X.PagedList.Extensions;
 
 namespace HMS.Controllers
 {
     [Route("user")]
     public class UserController : Controller
     {
-        private IConfiguration configuration;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IConfiguration _configuration)
+        public UserController(IConfiguration configuration)
         {
-            configuration = _configuration;
+            _configuration = configuration;
         }
 
         #region UserList
-
         [Route("user-list")]
-        public IActionResult UserList()
+        public IActionResult UserList(int page = 1, int pageSize = 8)
         {
+            List<UserAddEditModel> users = new List<UserAddEditModel>();
 
-            string connectionString = this.configuration.GetConnectionString("ConnectionString");
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
-            SqlCommand command = connection.CreateCommand();
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_User_User_SelectAll";
-            SqlDataReader reader = command.ExecuteReader();
-            DataTable table = new DataTable();
-            table.Load(reader);
-            return View(table);
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("PR_User_User_SelectAll", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                SqlDataReader reader = cmd.ExecuteReader();
 
+                while (reader.Read())
+                {
+                    users.Add(new UserAddEditModel
+                    {
+                        UserID = Convert.ToInt32(reader["UserID"]),
+                        UserName = reader["UserName"].ToString(),
+                        Email = reader["Email"].ToString(),
+                        IsActive = Convert.ToBoolean(reader["IsActive"]),
+                        Modified = Convert.ToDateTime(reader["Modified"])
+                    });
+                }
+            }
 
+            // ✅ Apply pagination
+            var pagedUsers = users.ToPagedList(page, pageSize);
 
+            return View(pagedUsers);
         }
+      
         #endregion userlist
         [Route("user-edit")]
         public IActionResult UserForm(int ID) {
             
             if(ID > 0)
             {
-                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
@@ -78,7 +94,7 @@ namespace HMS.Controllers
         {
             if (ModelState.IsValid)
             {
-                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
@@ -107,7 +123,7 @@ namespace HMS.Controllers
 
                 return RedirectToAction("UserList");
             }
-            return RedirectToAction("UserList");
+            return View("UserAddEdit");
         }
 
         [HttpPost]
@@ -116,7 +132,7 @@ namespace HMS.Controllers
         {
             try
             {
-                string connectionString = configuration.GetConnectionString("ConnectionString"); // ✅ Fixed
+                string connectionString = _configuration.GetConnectionString("ConnectionString"); // ✅ Fixed
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     con.Open();
@@ -147,7 +163,7 @@ namespace HMS.Controllers
 
             try
             {
-                string connectionString = configuration.GetConnectionString("ConnectionString");
+                string connectionString = _configuration.GetConnectionString("ConnectionString");
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     con.Open();
@@ -177,7 +193,7 @@ namespace HMS.Controllers
         {
             try
             {
-                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
                 SqlConnection connection = new SqlConnection(connectionString);
                 connection.Open();
                 SqlCommand command = connection.CreateCommand();
@@ -194,7 +210,91 @@ namespace HMS.Controllers
             }
             return RedirectToAction("UserList");
         }
-        #endregion Delete
 
+        [HttpGet("ExportToExcel")]
+        public IActionResult ExportToExcel()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                // ✅ Fetch data from Users table
+                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT UserID, UserName, MobileNO,Email, IsActive, Created, Modified FROM [User]", conn))
+                    {
+                        conn.Open();
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        da.Fill(dt);
+                    }
+                }
+
+                // ✅ Create Excel workbook
+                using (var workbook = new XLWorkbook())
+                {
+                    dt.TableName = "Users";
+                    workbook.Worksheets.Add(dt);
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+
+                        // ✅ Return Excel file
+                        return File(content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "UsersList.xlsx");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error exporting data: " + ex.Message;
+                return RedirectToAction("UserList");
+            }
+        }
+        #endregion Delete
+        [HttpGet("ExportToCSV")]
+        public IActionResult ExportToCSV()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                // ✅ Fetch data from Users table
+                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
+                {
+                    using (SqlCommand cmd = new SqlCommand("SELECT UserID, UserName, Email, IsActive, Created, Modified FROM [User]", conn))
+                    {
+                        conn.Open();
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        da.Fill(dt);
+                    }
+                }
+
+                // ✅ Convert DataTable to CSV
+                StringBuilder sb = new StringBuilder();
+
+                // Add column headers
+                IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+                sb.AppendLine(string.Join(",", columnNames));
+
+                // Add rows
+                foreach (DataRow row in dt.Rows)
+                {
+                    IEnumerable<string> fields = row.ItemArray.Select(field => "\"" + field.ToString().Replace("\"", "\"\"") + "\"");
+                    sb.AppendLine(string.Join(",", fields));
+                }
+
+                // ✅ Return CSV File
+                return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", "UsersList.csv");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error exporting data: " + ex.Message;
+                return RedirectToAction("UserList");
+            }
+        }
     }
+
 }
