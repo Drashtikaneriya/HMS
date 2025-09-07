@@ -1,9 +1,11 @@
-﻿using HMS.Models;
+﻿using ClosedXML.Excel;
+using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace HMS.Controllers
 {
@@ -16,21 +18,47 @@ namespace HMS.Controllers
         {
             configuration = _configuration;
         }
-        public IActionResult DepartmentList()
+        public IActionResult DepartmentList(int? page)
         {
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
+
+            DataTable table = new DataTable();
 
             string connectionString = this.configuration.GetConnectionString("ConnectionString");
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
-            SqlCommand command = connection.CreateCommand();
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "PR_Dept_Department_SelectAll";
-            SqlDataReader reader = command.ExecuteReader();
-            DataTable table = new DataTable();
-            table.Load(reader);
-            return View(table);
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand command = connection.CreateCommand())
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_Dept_Department_SelectAll";
 
+                    SqlDataReader reader = command.ExecuteReader();
+                    table.Load(reader);
+                }
+            }
+
+            // ✅ Manual pagination
+            var rows = table.AsEnumerable().ToList();
+            int totalRecords = rows.Count;
+
+            DataTable pagedTable = table.Clone();
+            if (totalRecords > 0)
+            {
+                var pagedRows = rows.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                if (pagedRows.Any())
+                    pagedTable = pagedRows.CopyToDataTable();
+            }
+
+            // ✅ Pass pagination info
+            ViewBag.TotalItems = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.PageNumber = pageNumber;
+
+            return View(pagedTable);
         }
+
         public IActionResult DepartmentDelete(int DepartmentID)
         {
             try
@@ -51,40 +79,40 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DepartmentList");
         }
-        //public IActionResult DepartmentForm(int ID)
-        //{
-        //    if (ID > 0)
-        //    {
-        //        string connectionString = this.configuration.GetConnectionString("ConnectionString");
-        //        SqlConnection connection = new SqlConnection(connectionString);
-        //        connection.Open();
-        //        SqlCommand command = connection.CreateCommand();
-        //        command.CommandType = CommandType.StoredProcedure;
-        //        command.CommandText = "PR_Dept_Department_SelectByPK";
+     
+        public IActionResult DeleteSelectedDepartments(List<int> SelectedUserIds)
+        {
+            if (SelectedUserIds == null || SelectedUserIds.Count == 0)
+            {
+                TempData["ErrorMessage"] = "No users selected for deletion.";
+                return RedirectToAction("DepartmentList");
+            }
 
-        //        command.Parameters.AddWithValue("DepartmentID", ID);
-        //        SqlDataReader reader = command.ExecuteReader();
+            try
+            {
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
 
+                foreach (var userId in SelectedUserIds)
+                {
+                    SqlCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_User_User_Delete";
+                    command.Parameters.AddWithValue("@UserID", userId);
+                    command.ExecuteNonQuery();
+                }
 
-        //        DepartmentAddEditModel model = new DepartmentAddEditModel();
+                TempData["SuccessMessage"] = "Selected users deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error: " + ex.Message;
+            }
 
-        //        while (reader.Read())
-        //        {
-        //            //model.DepartmentID = ID;
-        //            model.UserID = Convert.ToInt32(reader["UserID"]);
-        //            model.DepartmentName = reader["DepartmentName"].ToString();
-        //            model.Description = reader["Description"].ToString();
-        //            model.IsActive = Convert.ToBoolean(reader["IsActive"]);
-        //        }
+            return RedirectToAction("DepartmentList");
+        }
 
-        //        return View("DepartmentAddEdit", model);
-        //    }
-        //    else
-        //    {
-        //        return View("DepartmentAddEdit", new DepartmentAddEditModel());
-        //    }
-        //}  
-        #region Department Fill Form
         public IActionResult DepartmentForm(int ID)
         {
             if (ID > 0)
@@ -127,8 +155,6 @@ namespace HMS.Controllers
                 });
             }
         }
-
-        #endregion
 
         public IActionResult DepartmentAddEdit(DepartmentAddEditModel departmentModel)
         {
@@ -173,41 +199,86 @@ namespace HMS.Controllers
 
             return RedirectToAction("DepartmentList");
         }
+        [HttpGet("ExportDepartmentToExcel")]
+        public IActionResult ExportDepartmentToExcel()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_Dept_Department_SelectAll";
+                    SqlDataAdapter da = new SqlDataAdapter(command);
+                    da.Fill(dt);
+                }
+
+                using (var workbook = new XLWorkbook())
+                {
+                    dt.TableName = "Departments";
+                    workbook.Worksheets.Add(dt);
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+                        return File(content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "DepartmentsList.xlsx");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error exporting department data: " + ex.Message;
+                return RedirectToAction("DepartmentList");
+            }
+        }
+
+        [HttpGet("ExportDepartmentToCSV")]
+        public IActionResult ExportDepartmentToCSV()
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                string connectionString = this.configuration.GetConnectionString("ConnectionString");
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_Dept_Department_SelectAll";
+                    SqlDataAdapter da = new SqlDataAdapter(command);
+                    da.Fill(dt);
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                // Add column headers
+                IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+                sb.AppendLine(string.Join(",", columnNames));
+
+                // Add rows
+                foreach (DataRow row in dt.Rows)
+                {
+                    IEnumerable<string> fields = row.ItemArray.Select(field => "\"" + field.ToString().Replace("\"", "\"\"") + "\"");
+                    sb.AppendLine(string.Join(",", fields));
+                }
+
+                return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", "DepartmentsList.csv");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error exporting department data: " + ex.Message;
+                return RedirectToAction("DepartmentList");
+            }
+        }
 
 
-
-
-        //public IActionResult DepartmentAddEdit(DepartmentAddEditModel DepartmentAddEditModel)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        string connectionString = this.configuration.GetConnectionString("ConnectionString");
-        //        SqlConnection connection = new SqlConnection(connectionString);
-        //        connection.Open();
-        //        SqlCommand command = connection.CreateCommand();
-        //        command.CommandType = CommandType.StoredProcedure;
-
-        //        if (DepartmentAddEditModel.DepartmentID >0)
-        //        {
-        //            command.CommandText = "PR_Dept_Department_UpdateByPK";
-        //            command.Parameters.AddWithValue("DepartmentID", DepartmentAddEditModel.DepartmentID);
-        //        }
-        //        else
-        //        {
-        //            command.CommandText = "PR_Dept_Department_Insert";
-        //        }
-
-        //        command.Parameters.Add("@DepartmentName", SqlDbType.NVarChar).Value = DepartmentAddEditModel.DepartmentName;
-        //        command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = DepartmentAddEditModel.Description;
-        //        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = DepartmentAddEditModel.IsActive;
-        //        command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DepartmentAddEditModel.Modified;
-        //        command.Parameters.Add("@UserID", SqlDbType.Int).Value = DepartmentAddEditModel.UserID;
-
-        //        command.ExecuteNonQuery();
-
-        //        return RedirectToAction("DepartmentList");
-        //    }
-        //    return View("DepartmentAddEdit");
-        //}
     }
 }

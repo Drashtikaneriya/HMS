@@ -22,6 +22,19 @@
 </div>
 
 
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success me-2" href="/user/ExportToCSV">⬇️ Download CSV</a>
+        <a class="btn btn-success me-2" href="/user/ExportToExcel">📂 Download Excel</a>
+        <a class="btn btn-primary" href="/Patient/PatientAddEdit">➕ Add Patient</a> <!-- ✅ Add User button -->
+    </div>
+    <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Users</button>
+    </div>
+</div>
+
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
 {
@@ -33,23 +46,23 @@
 
 <table class="table table-bordered table-hover shadow-sm">
     <thead class="table-primary">
-       
-            <tr>
-                <th>PatientID</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Address</th>
-                <th>DOB</th>
-                <th>Gender</th>
-                <th>Actions</th>
-            </tr>
+
+        <tr>
+            <th>PatientID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>DOB</th>
+            <th>Gender</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (DataRow dr in Model.Rows)
-            {
-                <tr>
-                    <td>@dr["PatientID"]</td>
+        @foreach (DataRow dr in Model.Rows)
+        {
+            <tr>
+                <td>@dr["PatientID"]</td>
                     <td>@dr["Name"]</td>
                     <td>@dr["Phone"]</td>
                     <td>@dr["Email"]</td>
@@ -71,7 +84,7 @@
                         </div>
                     </td>
                 </tr>
-            }
+                }
         </tbody>
     </table>
 </div>

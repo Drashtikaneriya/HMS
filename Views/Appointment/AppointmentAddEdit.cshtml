@@ -73,7 +73,8 @@
                         <input asp-for="Created" type="hidden" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
                         <input asp-for="Modified" type="hidden" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
 
-                        <div class="text-end">
+                        <div class="d-flex justify-content-between">
+                            <a href="/appointment/list" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">⬅ Back to Appointment List</a>
                             <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
                         </div>
                     </form>

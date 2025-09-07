@@ -20,7 +20,19 @@
     </form>
     <br />
 </div>
-
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success me-2" href="/DoctorDepartment/ExportToCSV">⬇️ Download CSV</a>
+        <a class="btn btn-success me-2" href="/DoctorDepartment/ExportToExcel">📂 Download Excel</a>
+        <a class="btn btn-primary" href="/DoctorDepartment/DoctorDepartmentAddEdit">➕ Add DoctorDepartment</a> <!-- ✅ Add User button -->
+    </div>
+    <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
+    
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Users</button>
+    </div>
+</div>
 
 <!-- Error Message -->
 @if (TempData["ErrorMessage"] != null)
@@ -34,6 +46,7 @@
       
             <tr>
                 <th style="min-width: 150px;">DoctorDept ID</th>
+            <th style="min-width: 160px;">Actions</th>
                 <th style="min-width: 150px;">Doctor Name</th>
                 <th style="min-width: 200px;">Department Name</th>
                 <th style="min-width: 120px;">Created</th>
@@ -42,7 +55,7 @@
                 <th style="min-width: 150px;">User Name</th>
                 <th style="min-width: 200px;">Email</th>
                 <th style="min-width: 140px;">Mobile No</th>
-                <th style="min-width: 160px;">Actions</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -50,6 +63,22 @@
             {
                 <tr>
                     <td>@dr["DoctorDepartmentID"]</td>
+                <td>
+                    <!-- Edit Button -->
+                    <a asp-controller="DoctorDepartment"
+                       asp-action="DoctorDepartmentForm"
+                       asp-route-ID="@dr["DoctorDepartmentID"]"
+                       class="btn btn-primary btn-sm me-1">
+                        Edit
+                    </a>
+
+                    <!-- SweetAlert Delete Button -->
+                    <button type="button"
+                            class="btn btn-danger btn-sm"
+                            onclick="confirmDelete('@dr["DoctorDepartmentID"]', '@dr["Doctorname"]')">
+                        Delete
+                    </button>
+                </td>
                 <td>@dr["doctorname"]</td>
                     <td>@dr["deptname"]</td>
                     <td>@Convert.ToDateTime(dr["Created"]).ToString("dd-MM-yyyy")</td>
@@ -58,22 +87,7 @@
                     <td>@dr["UserName"]</td>
                     <td>@dr["Email"]</td>
                     <td>@dr["MobileNo"]</td>
-                    <td>
-                        <!-- Edit Button -->
-                        <a asp-controller="DoctorDepartment"
-                       asp-action="DoctorDepartmentForm"
-                           asp-route-ID="@dr["DoctorDepartmentID"]"
-                           class="btn btn-primary btn-sm me-1">
-                            Edit
-                        </a>
-
-                        <!-- SweetAlert Delete Button -->
-                        <button type="button"
-                                class="btn btn-danger btn-sm"
-                                onclick="confirmDelete('@dr["DoctorDepartmentID"]', '@dr["Doctorname"]')">
-                            Delete
-                        </button>
-                    </td>
+                   
                 </tr>
             }
         </tbody>

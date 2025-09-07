@@ -1,121 +1,102 @@
-﻿
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Welcome to HealthSoft</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+﻿@model HMS.Models.DashboardCountModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
 
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    .dashboard-card {
+        min-height: 180px; /* ensures all cards are same height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.2s;
+    }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(circle at top left, #e0f7fa, #ffffff);
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-            background-repeat: repeat;
-            background-size: auto;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+    .dashboard-card i {
+        font-size: 2.5rem;
+    }
 
-        .hero-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-        }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+</style>
 
-        .welcome-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 50px 40px;
-            max-width: 550px;
-            width: 100%;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: all 0.3s ease-in-out;
-        }
+<div class="container py-4">
+    <div class="row g-4 justify-content-center">
+        <!-- Row 1: Users, Doctors, Departments -->
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="User" asp-action="UserList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-people text-primary"></i>
+                    <h5 class="mt-2">Users</h5>
+                    <h3 class="fw-bold">@Model.TotalUsers</h3>
+                </div>
+            </a>
+        </div>
 
-            .welcome-card:hover {
-                transform: scale(1.02);
-                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-            }
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="Doctor" asp-action="DoctorList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-person-badge text-success"></i>
+                    <h5 class="mt-2">Doctors</h5>
+                    <h3 class="fw-bold">@Model.TotalDoctors</h3>
+                </div>
+            </a>
+        </div>
 
-            .welcome-card img {
-                width: 90px;
-                margin-bottom: 20px;
-            }
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="Department" asp-action="DepartmentList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-building text-warning"></i>
+                    <h5 class="mt-2">Departments</h5>
+                    <h3 class="fw-bold">@Model.TotalDepartments</h3>
+                </div>
+            </a>
+        </div>
 
-            .welcome-card h1 {
-                font-weight: 600;
-                font-size: 2.3rem;
-                color: #007bff;
-                margin-bottom: 10px;
-            }
+        <!-- Row 2: Doctor-Department, Appointments, Patients -->
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="DoctorDepartment" asp-action="DoctorDepartmentList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-person-lines-fill text-danger"></i>
+                    <h5 class="mt-2">Doc-Dept</h5>
+                    <h3 class="fw-bold">@Model.TotalDoctorDepartments</h3>
+                </div>
+            </a>
+        </div>
 
-            .welcome-card p {
-                color: #444;
-                font-size: 1rem;
-                margin-bottom: 30px;
-            }
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="Appointment" asp-action="AppointmentList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-calendar-check text-info"></i>
+                    <h5 class="mt-2">Appointments</h5>
+                    <h3 class="fw-bold">@Model.TotalAppointments</h3>
+                </div>
+            </a>
+        </div>
 
-        .welcome-btn {
-            padding: 12px 35px;
-            font-size: 1rem;
-            font-weight: 500;
-            border-radius: 30px;
-            background: linear-gradient(to right, #007bff, #00bcd4);
-            color: white;
-            border: none;
-            transition: 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-            text-decoration: none;
-        }
+        <div class="col-12 col-md-4 col-lg-4">
+            <a asp-controller="Patient" asp-action="PatientList" class="text-decoration-none">
+                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                    <i class="bi bi-heart-pulse text-secondary"></i>
+                    <h5 class="mt-2">Patients</h5>
+                    <h3 class="fw-bold">@Model.TotalPatients</h3>
+                </div>
+            </a>
+        </div>
 
-            .welcome-btn:hover {
-                transform: scale(1.05);
-                background: linear-gradient(to right, #0056b3, #008c9e);
-                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-            }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: #007bff;
-            border-radius: 5px;
-        }
-
-        /* ✅ Media Queries Fixed */
-        
-    </style>
-</head>
-<body>
-    <div class="hero-container">
-        <div class="welcome-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" alt="Doctor Icon" width="100">
-
-
-            <h1>Welcome to <span style="color:#28a745;">HealthSoft</span></h1>
-            <p>Smart Hospital Management System<br />Built with .NET to simplify healthcare operations</p>
-           
+        <!-- Row 3: Revenue -->
+        <div class="col-12 col-md-4 col-lg-4">
+            <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
+                <i class="bi bi-currency-dollar text-success"></i>
+                <h5 class="mt-2">Revenue</h5>
+                <h3 class="fw-bold">@Model.TotalRevenue.ToString("C")</h3>
+            </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>

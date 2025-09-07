@@ -10,68 +10,101 @@
 
 <h1 class="mb-4 text-primary">Department List</h1>
 
-<!-- Add Department Button + Search Form on Same Line -->
-<div>
+<!-- ✅ Search Form -->
+<form method="get" asp-action="DepartmentList" class="mb-3">
+    <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Search by Department Name"
+           class="form-control w-25 d-inline-block" />
+    <button type="submit" class="btn btn-outline-primary px-4 fw-semibold">Search</button>
+</form>
 
-    @* <!-- Add Department Button -->
-    <a asp-controller="Department" asp-action="DepartmentAddEdit" class="btn btn-primary fw-bold">
-        + Add Department
-    </a> *@
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success" asp-controller="Department" asp-action="ExportDepartmentToExcel">⬇️ Download CSV</a>
+        <a class="btn btn-success" asp-controller="Department" asp-action="ExportDepartmentToCSV">📂Export to CSV</a>
 
-    <!-- Search Form -->
-    <form method="get" asp-action="DepartmentList" class="d-flex">
-        <div class="input-group">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
-            <button type="submit" class="btn btn-outline-primary">Search</button>
-        </div>
-    </form>
-    <br/
+        <a class="btn btn-primary" href="/Department/DepartmentAddEdit">➕ Add Department</a>
+    </div>
+    <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Departments</button>
+    </div>
 </div>
-<!-- Error Message -->
+
+<!-- ✅ Messages -->
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
-<!-- Department Table -->
-<table class="table table-bordered table-hover shadow-sm">
-    <thead class="table-primary">
-        <tr>
-            <th>Department ID</th>
-            <th>Department Name</th>
-            <th>Description</th>
-            <th class="text-center">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow dr in Model.Rows)
-        {
+<!-- ✅ Department Table with Checkboxes -->
+<form id="deleteSelectedForm" asp-controller="Department" asp-action="DeleteSelectedDepartments" method="post">
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-primary">
             <tr>
-                <td>@dr["DepartmentID"]</td>
-                <td>@dr["DepartmentName"]</td>
-                <td>@dr["Description"]</td>
-                <td class="text-center">
-                    <!-- Edit Button -->
-                    <a asp-controller="Department"
-                       asp-action="DepartmentForm"
-                       asp-route-ID="@dr["DepartmentID"]"
-                       class="btn btn-sm btn-primary me-2">
-                        Edit
-                    </a>
-
-                    <!-- Delete Button with SweetAlert -->
-                    <button type="button"
-                            class="btn btn-sm btn-danger"
-                            onclick="confirmDelete('@dr["DepartmentID"]', '@dr["DepartmentName"]')">
-                        Delete
-                    </button>
-                </td>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>Department ID</th>
+                <th>Department Name</th>
+                <th>Description</th>
+                <th class="text-center">Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="SelectedDepartmentIds" value="@dr["DepartmentID"]" class="selectCheckbox" />
+                    </td>
+                    <td>@dr["DepartmentID"]</td>
+                    <td>@dr["DepartmentName"]</td>
+                    <td>@dr["Description"]</td>
+                    <td class="text-center">
+                        <a asp-controller="Department"
+                           asp-action="DepartmentForm"
+                           asp-route-ID="@dr["DepartmentID"]"
+                           class="btn btn-sm btn-primary me-1">
+                            Edit
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-danger"
+                                onclick="confirmDelete('@dr["DepartmentID"]', '@dr["DepartmentName"]')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
 
-<!-- SweetAlert Script for Deletion -->
+<!-- ✅ Pagination Controls -->
+<nav>
+    <ul class="pagination justify-content-center">
+        @{
+            int totalItems = ViewBag.TotalItems;
+            int pageSize = ViewBag.PageSize;
+            int pageNumber = ViewBag.PageNumber;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (totalPages > 1)
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == pageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("DepartmentList", new { page = i, searchTerm = ViewBag.SearchTerm })">@i</a>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</nav>
+
+<!-- ✅ SweetAlert Scripts -->
 <script>
     function confirmDelete(deptId, deptName) {
         Swal.fire({
@@ -89,7 +122,31 @@
             }
         });
     }
-</script>
 
-<!-- Optional Bootstrap Icons CDN (if using icons) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    document.getElementById("selectAll").addEventListener("change", function () {
+        let checkboxes = document.querySelectorAll(".selectCheckbox");
+        checkboxes.forEach(chk => chk.checked = this.checked);
+    });
+    function confirmDeleteSelected() {
+        let selected = document.querySelectorAll(".selectCheckbox:checked");
+        if (selected.length === 0) {
+            Swal.fire('No Departments Selected', 'Please select at least one department to delete.', 'info');
+            return;
+        }
+        Swal.fire({
+            title: 'Delete Selected Departments?',
+            text: '⚠️ This will permanently remove selected departments from the system!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete selected!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteSelectedForm').submit(); // ✅ Correct ID
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,176 @@
+﻿@* @{
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+
+@model UserLoginModel
+
+<main>
+    <div class="container">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+                        <div class="d-flex justify-content-center py-4">
+                            <a class="logo d-flex align-items-center w-auto">
+                                <img src="~/image/Logo.png" alt="">
+                                <span class="d-none d-lg-block">Address Book</span>
+                            </a>
+                        </div><!-- End Logo -->
+
+                        <div class="card mb-3">
+
+                            <div class="card-body">
+
+                                <div class="pt-4 pb-2">
+                                    <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
+                                    <p class="text-center small">Enter your username & password to login</p>
+                                </div>
+
+                                <form class="row g-3 needs-validation" asp-action="UserLogin" asp-controller="User">
+
+                                    <div class="col-12">
+                                        <label asp-for="Username" class="form-label">Username</label>
+                                        <div class="input-group has-validation">
+                                            <span class="input-group-text" id="inputGroupPrepend"></span>
+                                            <input type="text" asp-for="Username" class="form-control" id="yourUsername">
+                                            <span asp-validation-for="Username" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label asp-for="Password" class="form-label">Password</label>
+                                        <input type="password" asp-for="Password" class="form-control" id="yourPassword">
+                                        <span asp-validation-for="Password" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe">
+                                            <label class="form-check-label" for="rememberMe">Remember me</label>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button class="btn btn-primary w-100" type="submit">Login</button>
+                                    </div>
+                                    <div class="col-12">
+                                        <p class="small mb-0">Don't have account? <a asp-controller="User" asp-action="UserAddEdit">Create an account</a></p>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</main><!-- End #main -->
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+} *@
+@{
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+
+@model UserLoginModel
+
+<main style="background: linear-gradient(135deg, #004e92, #000428); min-height: 100vh;">
+    <div class="container">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        <section class="section register d-flex flex-column align-items-center justify-content-center py-4">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-5 col-md-7 d-flex flex-column align-items-center justify-content-center">
+
+                        <!-- HMS Branding -->
+                        <div class="text-center mb-4">
+                            <!-- Free HMS Medical Logo Icon -->
+                            <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png"
+                                 alt="HMS Logo"
+                                 style="height:90px; filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.5));">
+
+                        </div>
+                        <!-- End Branding -->
+
+                        <div class="card shadow-lg border-0 rounded-4 mb-3" style="background: rgba(255,255,255,0.95);">
+                            <div class="card-body p-4">
+
+                                <div class="pt-2 pb-3 text-center">
+                                    <h5 class="card-title fw-bold text-dark fs-4">Login to <span class="text-primary">HMS</span></h5>
+                                    <p class="text-muted small">Enter your credentials to continue</p>
+                                </div>
+
+                                <form class="row g-3 needs-validation" asp-action="UserLogin" asp-controller="User">
+
+                                    <div class="col-12">
+                                        <label asp-for="Username" class="form-label">Username</label>
+                                        <div class="input-group has-validation">
+                                            <span class="input-group-text bg-primary text-white"><i class="bi bi-person"></i></span>
+                                            <input type="text" asp-for="Username" class="form-control" id="yourUsername" placeholder="Enter username">
+                                            <span asp-validation-for="Username" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label asp-for="Password" class="form-label">Password</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white"><i class="bi bi-lock"></i></span>
+                                            <input type="password" asp-for="Password" class="form-control" id="yourPassword" placeholder="Enter password">
+                                        </div>
+                                        <span asp-validation-for="Password" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe">
+                                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <button class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm" type="submit">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                        </button>
+                                    </div>
+
+                                    <div class="col-12 text-center">
+                                        <p class="small mb-0 mt-2 text-dark">
+                                            Don't have an account?
+                                            <a asp-controller="User" asp-action="UserAddEdit" class="text-primary fw-bold">Create one</a>
+                                        </p>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+}

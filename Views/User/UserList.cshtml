@@ -1,28 +1,58 @@
-﻿@model X.PagedList.IPagedList<HMS.Models.UserAddEditModel>
-@using X.PagedList.Mvc.Core;
+﻿@model DataTable
+@using System.Data
+@using System.Linq
 
 <h1 class="mb-4">User List</h1>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+
 <!-- ✅ Search Form -->
-<div>
-    <form method="get" asp-action="UserList" class="d-flex">
-        <div class="input-group">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Search by User Name" />
-            <button type="submit" class="btn btn-outline-primary">Search</button>
-        </div>
-    </form>
-    <br />
-</div>
+<form asp-controller="User" asp-action="UserList" method="get"
+      class="d-flex align-items-center gap-2 shadow-sm p-2 rounded bg-light w-50">
+
+    <!-- Name -->
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-person"></i>
+        </span>
+        <input type="text" name="name" value="@Context.Request.Query["name"]"
+               class="form-control" placeholder="Name">
+    </div>
+
+    <!-- Email -->
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-envelope"></i>
+        </span>
+        <input type="text" name="email" value="@Context.Request.Query["email"]"
+               class="form-control" placeholder="Email">
+    </div>
+
+    <!-- Mobile -->
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-telephone"></i>
+        </span>
+        <input type="text" name="mobileNo" value="@Context.Request.Query["mobileNo"]"
+               class="form-control" placeholder="Mobile No">
+    </div>
+
+    <!-- Search button -->
+    <button type="submit" class="btn btn-outline-primary d-flex align-items-center gap-1">
+        <i class="bi bi-search"></i>
+        <span>Search</span>
+    </button>
+</form>
 
 <!-- ✅ Buttons -->
 <div class="d-flex justify-content-between mb-3">
     <div>
-        <a class="btn btn-success me-2" href="/user/ExportToCSV">⬇️ Download CSV</a>
-        <a class="btn btn-success" href="/user/ExportToExcel">📂 Download Excel</a>
+        @* <a class="btn btn-success me-2" href="/user/ExportToCSV">⬇️ Download CSV</a> *@
+        <a class="btn btn-success me-2" href="/User/ExportToExcel">📂 Download Excel</a>
+        <a class="btn btn-primary" href="/User/UserAddEdit">➕ Add User</a>
     </div>
     <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
         <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Users</button>
     </div>
 </div>
@@ -36,65 +66,81 @@
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 
-<div class="table-responsive" style="overflow-x:auto; max-width:100%;">
-    <form id="deleteSelectedForm" asp-controller="User" asp-action="DeleteSelectedUsers" method="post">
-        <table class="table table-bordered table-hover shadow-sm">
-            <thead class="table-primary">
+<!-- ✅ User Table -->
+<form id="deleteSelectedForm" asp-controller="User" asp-action="DeleteSelectedUsers" method="post">
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-primary">
+            <tr>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>UserId</th>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>IsActive</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Modified</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
                 <tr>
-                    <th><input type="checkbox" id="selectAll" /></th>
-                    <th>UserId</th>
-                    <th>User Name</th>
-                    <th>Email</th>
-                    <th>IsActive</th>
-                    <th>Created</th>
-                    <th>Status</th>
-                    <th>Modified</th>
-                    <th>Actions</th>
+                    <td>
+                        <input type="checkbox" name="SelectedUserIds" value="@dr["UserID"]" class="selectCheckbox" />
+                    </td>
+                    <td>@dr["UserID"]</td>
+                    <td>@dr["UserName"]</td>
+                    <td>@dr["Email"]</td>
+                    <td>@dr["IsActive"]</td>
+                    <td>@Convert.ToDateTime(dr["Created"]).ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @if (Convert.ToBoolean(dr["IsActive"]))
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Not Active</span>
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(dr["Modified"]).ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <a asp-controller="User" asp-action="UserForm" asp-route-ID="@dr["UserID"]"
+                           class="btn btn-primary btn-sm me-1">Edit</a>
+
+                        <button type="button" class="btn btn-danger btn-sm"
+                                onclick="confirmDelete('@dr["UserID"]', '@dr["UserName"]')">
+                            Delete
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in Model)
+            }
+        </tbody>
+    </table>
+</form>
+
+<!-- ✅ Pagination Controls -->
+<nav>
+    <ul class="pagination justify-content-center">
+        @{
+            int totalItems = ViewBag.TotalItems;
+            int pageSize = ViewBag.PageSize;
+            int pageNumber = ViewBag.PageNumber;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (totalPages > 1)
+            {
+                for (int i = 1; i <= totalPages; i++)
                 {
-                    <tr>
-                        <td>
-                            <input type="checkbox" name="SelectedUserIds" value="@row.UserID" class="selectCheckbox" />
-                        </td>
-                        <td>@row.UserID</td>
-                        <td>@row.UserName</td>
-                        <td>@row.Email</td>
-                        <td>@row.IsActive</td>
-                        <td>@row.Created.ToString("yyyy-MM-dd")</td>
-                        <td>
-                            @if (row.IsActive)
-                            {
-                                <span class="badge bg-success">Active</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">Not Active</span>
-                            }
-                        </td>
-                        <td>@row.Modified.ToString("yyyy-MM-dd")</td>
-                        <td>
-                            <a asp-controller="User" asp-action="UserForm" asp-route-ID="@row.UserID"
-                               class="btn btn-primary btn-sm me-1">Edit</a>
-
-                            <button type="button" class="btn btn-danger btn-sm"
-                                    onclick="confirmDelete('@row.UserID', '@row.UserName')">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
+                    <li class="page-item @(i == pageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("UserList", new { page = i, searchTerm = ViewBag.SearchTerm })">@i</a>
+                    </li>
                 }
-            </tbody>
-        </table>
-    </form>
-</div>
-
-<!-- ✅ Pagination Controls (outside table) -->
-<div class="d-flex justify-content-center">
-    @Html.PagedListPager(Model, page => Url.Action("UserList"  ,  new { page }))
-</div>
+            }
+        }
+    </ul>
+</nav>
 
 <script>
     function confirmDelete(userId, userName) {

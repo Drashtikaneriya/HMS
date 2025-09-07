@@ -1,5 +1,6 @@
 ﻿@model DataTable
 @using System.Data
+@using X.PagedList.Mvc.Core
 
 @{
     ViewData["Title"] = "Doctor List";
@@ -12,13 +13,26 @@
 
 <!-- Search Form -->
 <div>
-    <form method="get" asp-action="DepartmentList" class="d-flex">
+    <form method="get" asp-action="DoctorList" class="d-flex">
         <div class="input-group">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Doctor Name" />
             <button type="submit" class="btn btn-outline-primary">Search</button>
         </div>
     </form>
     <br />
+</div>
+
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success me-2" href="/doctor/ExportToCSV">⬇️ Download CSV</a>
+        <a class="btn btn-success me-2" href="/doctor/ExportToExcel">📂 Download Excel</a>
+        <a class="btn btn-primary" href="/doctor/doctor-form">➕ Add Doctor</a> <!-- ✅ Add Doctor button -->
+    </div>
+    <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected Doctors</button>
+    </div>
 </div>
 
 <!-- Error Message -->
@@ -26,49 +40,114 @@
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
-<!-- doctor Table -->
-<table class="table table-bordered table-hover shadow-sm">
-    <thead class="table-primary">
-        <tr>
-            <th>Doctor ID</th>
-            <th>Doctor Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Qualification</th>
-            <th>Specialization</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow dr in Model.Rows)
-        {
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<!-- ✅ Doctor Table with checkboxes -->
+<form id="deleteSelectedForm" asp-controller="Doctor" asp-action="DeleteSelectedDoctors" method="post">
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-primary">
             <tr>
-                <td>@dr["DoctorID"]</td>
-                <td>@dr["Name"]</td>
-                <td>@dr["Phone"]</td>
-                <td>@dr["Email"]</td>
-                <td>@dr["Qualification"]</td>
-                <td>@dr["Specialization"]</td>
-                <td>
-                    <!-- Edit Button -->
-                    <a asp-controller="Doctor" asp-action="DoctorForm" asp-route-ID=@dr["DoctorID"] class="btn btn-primary btn-sm me-1">
-                        Edit
-                    </a>
-
-                    <!-- SweetAlert Delete Button -->
-                    <button type="button"
-                            class="btn btn-danger btn-sm"
-                            onclick="confirmDelete('@dr["DoctorID"]', '@dr["Name"]')">
-                        Delete
-                    </button>
-                </td>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>Doctor ID</th>
+                <th>Doctor Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Qualification</th>
+                <th>Specialization</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="SelectedDoctorIds" value="@dr["DoctorID"]" class="selectCheckbox" />
+                    </td>
+                    <td>@dr["DoctorID"]</td>
+                    <td>@dr["Name"]</td>
+                    <td>@dr["Phone"]</td>
+                    <td>@dr["Email"]</td>
+                    <td>@dr["Qualification"]</td>
+                    <td>@dr["Specialization"]</td>
+                    <td>
+                        <!-- Edit Button -->
+                        <a asp-controller="Doctor" asp-action="DoctorForm" asp-route-ID="@dr["DoctorID"]" class="btn btn-primary btn-sm me-1">
+                            Edit
+                        </a>
 
-<!-- SweetAlert Delete Script -->
+                        <!-- SweetAlert Delete Button -->
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                onclick="confirmDelete('@dr["DoctorID"]', '@dr["Name"]')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+
+<!-- ✅ Pagination Controls -->
+<nav>
+    <ul class="pagination justify-content-center">
+        @{
+            int totalItems = ViewBag.TotalItems;
+            int pageSize = ViewBag.PageSize;
+            int pageNumber = ViewBag.PageNumber;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (totalPages > 1)
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == pageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("DoctorList", new { page = i, searchTerm = ViewBag.SearchTerm })">@i</a>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</nav>
+
+
+<!-- ✅ SweetAlert Scripts -->
 <script>
+    // Select All Checkbox
+    document.getElementById("selectAll").addEventListener("change", function () {
+        let checkboxes = document.querySelectorAll(".selectCheckbox");
+        checkboxes.forEach(chk => chk.checked = this.checked);
+    });
+
+    // Delete Selected Doctors
+    function confirmDeleteSelected() {
+        let selected = document.querySelectorAll(".selectCheckbox:checked");
+        if (selected.length === 0) {
+            Swal.fire('No Doctors Selected', 'Please select at least one doctor to delete.', 'info');
+            return;
+        }
+        Swal.fire({
+            title: 'Delete Selected Doctors?',
+            text: '⚠️ This will permanently remove selected doctors from the system!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete selected!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteSelectedForm').submit();
+            }
+        });
+    }
+
+    // Delete Single Doctor
     function confirmDelete(doctorId, doctorName) {
         Swal.fire({
             title: 'Are you sure?',
@@ -81,7 +160,7 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/Doctor/DoctorDelete?DoctorID=${doctorId}`;
+                window.location.href = `/Doctor/doctor-delete`;
             }
         });
     }

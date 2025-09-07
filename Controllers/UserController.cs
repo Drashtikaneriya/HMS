@@ -1,16 +1,17 @@
 ﻿using ClosedXML.Excel;
 using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
-using X.PagedList.Extensions;
 
 namespace HMS.Controllers
 {
-    [Route("user")]
+    //[CheckAccess]
+    //[Route("user")]
     public class UserController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -19,44 +20,163 @@ namespace HMS.Controllers
         {
             _configuration = configuration;
         }
-
-        #region UserList
-        [Route("user-list")]
-        public IActionResult UserList(int page = 1, int pageSize = 8)
+        
+        public IActionResult UserLogin(UserLoginModel userLoginModel)
         {
-            List<UserAddEditModel> users = new List<UserAddEditModel>();
-
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
+            try
             {
-                con.Open();
-                SqlCommand cmd = new SqlCommand("PR_User_User_SelectAll", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                if (ModelState.IsValid)
                 {
-                    users.Add(new UserAddEditModel
+                    string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                    SqlConnection sqlConnection = new SqlConnection(connectionString);
+                    sqlConnection.Open();
+                    SqlCommand sqlCommand = sqlConnection.CreateCommand();
+                    sqlCommand.CommandType = System.Data.CommandType.StoredProcedure;
+                    sqlCommand.CommandText = "PR_User_ValidateLogin";
+                    sqlCommand.Parameters.Add("@Username", SqlDbType.VarChar).Value = userLoginModel.Username;
+                    sqlCommand.Parameters.Add("@Password", SqlDbType.VarChar).Value = userLoginModel.Password;
+                    SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
+                    DataTable dataTable = new DataTable();
+                    dataTable.Load(sqlDataReader);
+                    if (dataTable.Rows.Count > 0)
                     {
-                        UserID = Convert.ToInt32(reader["UserID"]),
-                        UserName = reader["UserName"].ToString(),
-                        Email = reader["Email"].ToString(),
-                        IsActive = Convert.ToBoolean(reader["IsActive"]),
-                        Modified = Convert.ToDateTime(reader["Modified"])
-                    });
+                        foreach (DataRow dr in dataTable.Rows)
+                        {
+                            HttpContext.Session.SetString("UserID", dr["UserID"].ToString());
+                            HttpContext.Session.SetString("UserName", dr["UserName"].ToString());
+                            HttpContext.Session.SetString("EmailAddress", dr["Email"].ToString());
+                        }
+
+                        return RedirectToAction("Index", "Dashboard");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "User is not found";
+                        return RedirectToAction("Login", "User");
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                TempData["ErrorMessage"] = e.Message;
+            }
+
+            return RedirectToAction("Login");
+        }
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "User");
+        }
+        //[Route("Login")]
+        public IActionResult Login()
+        {
+            return View();
+        }
+        //  User List with Pagination
+        [HttpGet]
+        //[Route("user-list")]
+        public IActionResult UserList(int? page, string name, string email, string mobileNo)
+        {
+            int pageSize = 5;
+            int pageNumber = page ?? 1;
+
+            DataTable table = new DataTable();
+
+            string connectionString = this._configuration.GetConnectionString("ConnectionString");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("PR_User_User_SelectAll", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    // Pass parameters (if empty, send NULL)
+                    command.Parameters.AddWithValue("@Name", string.IsNullOrEmpty(name) ? DBNull.Value : name);
+                    command.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : email);
+                    command.Parameters.AddWithValue("@MobileNo", string.IsNullOrEmpty(mobileNo) ? DBNull.Value : mobileNo);
+
+                    connection.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    table.Load(reader);
                 }
             }
 
-            // ✅ Apply pagination
-            var pagedUsers = users.ToPagedList(page, pageSize);
+            // ✅ Manual pagination
+            var rows = table.AsEnumerable().ToList();
+            int totalRecords = rows.Count;
 
-            return View(pagedUsers);
+            DataTable pagedTable = table.Clone();
+            if (totalRecords > 0)
+            {
+                var pagedRows = rows.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+                if (pagedRows.Any())
+                    pagedTable = pagedRows.CopyToDataTable();
+            }
+
+            // ✅ Pass pagination + filter values
+            ViewBag.TotalItems = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.Name = name;
+            ViewBag.Email = email;
+            ViewBag.MobileNo = mobileNo;
+
+            return View(pagedTable);
         }
-      
-        #endregion userlist
-        [Route("user-edit")]
-        public IActionResult UserForm(int ID) {
-            
-            if(ID > 0)
+
+        //public IActionResult UserList(int? page)
+        //{
+        //    int pageSize = 5;
+        //    int pageNumber = page ?? 1;
+
+        //    DataTable table = new DataTable();
+
+        //    string connectionString = this._configuration.GetConnectionString("ConnectionString");
+        //    SqlConnection connection = new SqlConnection(connectionString);
+        //    connection.Open();
+        //    SqlCommand command = connection.CreateCommand();
+        //    command.CommandType = CommandType.StoredProcedure;
+        //    command.CommandText = "PR_User_User_SelectAll";
+        //    SqlDataReader reader = command.ExecuteReader();
+        //    table.Load(reader);
+
+        //    //// ✅ Search filter in C#
+        //    //if (!string.IsNullOrEmpty(searchTerm))
+        //    //{
+        //    //    var filteredRows = table.AsEnumerable()
+        //    //        .Where(r => r["UserName"].ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+        //    //                 || r["Email"].ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        //    //        .ToList();
+
+        //    //    table = filteredRows.Any() ? filteredRows.CopyToDataTable() : table.Clone();
+        //    //}
+
+        //    // ✅ Manual pagination
+        //    var rows = table.AsEnumerable().ToList();
+        //    int totalRecords = rows.Count;
+
+        //    DataTable pagedTable = table.Clone();
+        //    if (totalRecords > 0)
+        //    {
+        //        var pagedRows = rows.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+        //        if (pagedRows.Any())
+        //            pagedTable = pagedRows.CopyToDataTable();
+        //    }
+
+        //    //// Pass pagination info
+        //    ViewBag.TotalItems = totalRecords;
+        //    ViewBag.PageSize = pageSize;
+        //    ViewBag.PageNumber = pageNumber;
+
+        //    return View(pagedTable);
+        //}
+
+        //  User Form (Edit / Add)
+        //[Route("user-edit")]
+        public IActionResult UserForm(int ID)
+        {
+            if (ID > 0)
             {
                 string connectionString = this._configuration.GetConnectionString("ConnectionString");
                 SqlConnection connection = new SqlConnection(connectionString);
@@ -64,13 +184,10 @@ namespace HMS.Controllers
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
                 command.CommandText = "PR_User_User_SelectByPK";
-
-                command.Parameters.AddWithValue("UserID", ID);
+                command.Parameters.AddWithValue("@UserID", ID);
                 SqlDataReader reader = command.ExecuteReader();
 
-
                 UserAddEditModel model = new UserAddEditModel();
-
                 while (reader.Read())
                 {
                     model.UserID = Convert.ToInt32(reader["UserID"]);
@@ -85,11 +202,12 @@ namespace HMS.Controllers
             }
             else
             {
-                return View("UserAddEdit",new UserAddEditModel());
+                return View("UserAddEdit", new UserAddEditModel());
             }
         }
 
-        [Route("user-edit-add")]
+        // User Add/Edit (Insert or Update)
+        //[Route("user-edit-add")]
         public IActionResult UserAddEdit(UserAddEditModel UserAddEditModel)
         {
             if (ModelState.IsValid)
@@ -100,24 +218,24 @@ namespace HMS.Controllers
                 SqlCommand command = connection.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
 
-                if(UserAddEditModel.UserID > 0)
+                if (UserAddEditModel.UserID > 0)
                 {
                     command.CommandText = "PR_User_User_UpdateByPK";
-                    command.Parameters.AddWithValue("UserID", UserAddEditModel.UserID);
+                    command.Parameters.AddWithValue("@UserID", UserAddEditModel.UserID);
                 }
                 else
                 {
                     command.CommandText = "PR_User_User_Insert";
+                    command.Parameters.AddWithValue("@Created", DateTime.Now);
+
                 }
 
-
-                command.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = UserAddEditModel.UserName;
-                command.Parameters.Add("@Password", SqlDbType.NVarChar).Value = UserAddEditModel.Password;
-                command.Parameters.Add("@Email", SqlDbType.NVarChar).Value = UserAddEditModel.Email;
-                command.Parameters.Add("@MobileNo", SqlDbType.NVarChar).Value = UserAddEditModel.MobileNo;
-                command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = UserAddEditModel.IsActive;
-                command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = UserAddEditModel.Modified;
-
+                command.Parameters.AddWithValue("@UserName", UserAddEditModel.UserName);
+                command.Parameters.AddWithValue("@Password", UserAddEditModel.Password);
+                command.Parameters.AddWithValue("@Email", UserAddEditModel.Email);
+                command.Parameters.AddWithValue("@MobileNo", UserAddEditModel.MobileNo);
+                command.Parameters.AddWithValue("@IsActive", UserAddEditModel.IsActive);
+                command.Parameters.AddWithValue("@Modified", DateTime.Now);
 
                 command.ExecuteNonQuery();
 
@@ -126,20 +244,20 @@ namespace HMS.Controllers
             return View("UserAddEdit");
         }
 
+        //  Delete All Users
         [HttpPost]
-        [Route("delete-all")]
+        //[Route("delete-all")]
         public IActionResult DeleteAllUsers()
         {
             try
             {
-                string connectionString = _configuration.GetConnectionString("ConnectionString"); // ✅ Fixed
-                using (SqlConnection con = new SqlConnection(connectionString))
-                {
-                    con.Open();
-                    SqlCommand cmd = new SqlCommand("PR_User_DeleteAll", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.ExecuteNonQuery();
-                }
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_User_DeleteAll";
+                command.ExecuteNonQuery();
 
                 TempData["SuccessMessage"] = "✅ All users deleted successfully.";
             }
@@ -151,8 +269,9 @@ namespace HMS.Controllers
             return RedirectToAction("UserList");
         }
 
+        //  Delete Selected Users
         [HttpPost]
-        [Route("DeleteSelectedUsers")]
+        //[Route("DeleteSelectedUsers")]
         public IActionResult DeleteSelectedUsers(List<int> SelectedUserIds)
         {
             if (SelectedUserIds == null || SelectedUserIds.Count == 0)
@@ -163,18 +282,17 @@ namespace HMS.Controllers
 
             try
             {
-                string connectionString = _configuration.GetConnectionString("ConnectionString");
-                using (SqlConnection con = new SqlConnection(connectionString))
-                {
-                    con.Open();
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
 
-                    foreach (var userId in SelectedUserIds)
-                    {
-                        SqlCommand cmd = new SqlCommand("PR_User_User_Delete", con);
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@UserID", userId);
-                        cmd.ExecuteNonQuery();
-                    }
+                foreach (var userId in SelectedUserIds)
+                {
+                    SqlCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_User_User_Delete";
+                    command.Parameters.AddWithValue("@UserID", userId);
+                    command.ExecuteNonQuery();
                 }
 
                 TempData["SuccessMessage"] = "Selected users deleted successfully.";
@@ -187,7 +305,7 @@ namespace HMS.Controllers
             return RedirectToAction("UserList");
         }
 
-        #region Delete
+        #region Delete Single User
         [Route("user-delete")]
         public IActionResult UserDelete(int UserID)
         {
@@ -201,7 +319,7 @@ namespace HMS.Controllers
                 command.CommandText = "PR_User_User_Delete";
                 command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
                 command.ExecuteNonQuery();
-                TempData["SuccessMessage"] = "✅ Users Deleted Successfully.";
+                TempData["SuccessMessage"] = "✅ User Deleted Successfully.";
             }
             catch (Exception ex)
             {
@@ -210,7 +328,9 @@ namespace HMS.Controllers
             }
             return RedirectToAction("UserList");
         }
+        #endregion
 
+        // Export to Excel
         [HttpGet("ExportToExcel")]
         public IActionResult ExportToExcel()
         {
@@ -218,18 +338,14 @@ namespace HMS.Controllers
 
             try
             {
-                // ✅ Fetch data from Users table
-                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
-                {
-                    using (SqlCommand cmd = new SqlCommand("SELECT UserID, UserName, MobileNO,Email, IsActive, Created, Modified FROM [User]", conn))
-                    {
-                        conn.Open();
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        da.Fill(dt);
-                    }
-                }
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT UserID, UserName, MobileNO, Email, IsActive, Created, Modified FROM [User]";
+                SqlDataAdapter da = new SqlDataAdapter(command);
+                da.Fill(dt);
 
-                // ✅ Create Excel workbook
                 using (var workbook = new XLWorkbook())
                 {
                     dt.TableName = "Users";
@@ -239,8 +355,6 @@ namespace HMS.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-
-                        // ✅ Return Excel file
                         return File(content,
                             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                             "UsersList.xlsx");
@@ -253,7 +367,8 @@ namespace HMS.Controllers
                 return RedirectToAction("UserList");
             }
         }
-        #endregion Delete
+
+        //  Export to CSV
         [HttpGet("ExportToCSV")]
         public IActionResult ExportToCSV()
         {
@@ -261,18 +376,14 @@ namespace HMS.Controllers
 
             try
             {
-                // ✅ Fetch data from Users table
-                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("ConnectionString")))
-                {
-                    using (SqlCommand cmd = new SqlCommand("SELECT UserID, UserName, Email, IsActive, Created, Modified FROM [User]", conn))
-                    {
-                        conn.Open();
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
-                        da.Fill(dt);
-                    }
-                }
+                string connectionString = this._configuration.GetConnectionString("ConnectionString");
+                SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT UserID, UserName, Email, IsActive, Created, Modified FROM [User]";
+                SqlDataAdapter da = new SqlDataAdapter(command);
+                da.Fill(dt);
 
-                // ✅ Convert DataTable to CSV
                 StringBuilder sb = new StringBuilder();
 
                 // Add column headers
@@ -286,7 +397,6 @@ namespace HMS.Controllers
                     sb.AppendLine(string.Join(",", fields));
                 }
 
-                // ✅ Return CSV File
                 return File(Encoding.UTF8.GetBytes(sb.ToString()), "text/csv", "UsersList.csv");
             }
             catch (Exception ex)
@@ -296,5 +406,4 @@ namespace HMS.Controllers
             }
         }
     }
-
 }

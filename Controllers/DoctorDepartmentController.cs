@@ -51,7 +51,7 @@ namespace HMS.Controllers
             return RedirectToAction("DoctorDepartmentList");
         }
 
-     
+
         #region Doctor Department Add Edit
         [HttpGet]
         public IActionResult DoctorDepartmentAddEdit()
@@ -62,7 +62,7 @@ namespace HMS.Controllers
         [HttpPost]
         public IActionResult DoctorDepartmentAddEdit(DoctorDepartmentModelAddEdit DoctorDepartmentModelAddEdit)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
@@ -178,4 +178,3 @@ namespace HMS.Controllers
 
     }
 }
-

@@ -1,90 +1,161 @@
 ﻿@model DataTable
 @using System.Data
 
-@{
-    ViewData["Title"] = "Appointment List";
-}
-
-<!-- SweetAlert2 CDN -->
+<h1 class="mb-4">Appointment List</h1>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<h1 class="mb-4">Appointment List</h1>
-
-<!-- Search Form -->
+<!-- ✅ Search Form -->
 <div>
-    <form method="get" asp-action="DepartmentList" class="d-flex">
+    <form method="get" asp-action="AppointmentList" class="d-flex">
         <div class="input-group">
-            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Department Name" />
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Appointment Status" value="@ViewBag.SearchTerm" />
             <button type="submit" class="btn btn-outline-primary">Search</button>
         </div>
     </form>
     <br />
 </div>
 
-<!-- Error Message -->
+<!-- ✅ Buttons -->
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <a class="btn btn-success me-2" href="/appointment/ExportToCSV">⬇️ Download CSV</a>
+        <a class="btn btn-success me-2" href="/appointment/ExportToExcel">📂 Download Excel</a>
+        <a class="btn btn-primary" href="/appointment/Appointment-form">➕ Add Appointment</a>
+    </div>
+    <div>
+        <a class="btn btn-secondary me-2" asp-controller="Dashboard" asp-action="Index">🏠 Go to Dashboard</a>
+        <button type="button" class="btn btn-danger" onclick="confirmDeleteSelected()">🗑 Delete Selected</button>
+    </div>
+</div>
+
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
-<!-- Appointment Table -->
-
-<table class="table table-bordered table-hover shadow-sm">
-    <thead class="table-primary">
-        <tr>
-            <th>Appointment ID</th>
-            <th>Patient Name</th>
-            <th>Doctor Name</th>
-            <th>Gender</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (DataRow dr in Model.Rows)
-        {
+<!-- ✅ Table -->
+<form id="deleteSelectedForm" asp-controller="Appointment" asp-action="DeleteSelectedAppointments" method="post">
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-primary">
             <tr>
-                <td>@dr["AppointmentID"]</td>
-                <td>@dr["PatientName"]</td>
-                <td>@dr["DoctorName"]</td>
-                <td>@dr["Gender"]</td>
-                <td>@dr["AppointmentStatus"]</td>
-                <td>@Convert.ToDateTime(dr["AppointmentDate"]).ToString("dd-MM-yyyy")</td>
-                <td>
-                    <!-- Edit Button -->
-                    <a asp-controller="Appointment" asp-action="AppointmentForm" asp-route-ID="@dr["AppointmentID"]" class="btn btn-success btn-sm me-1">
-                        Edit
-                    </a>
-
-                    <!-- SweetAlert Delete Button -->
-                    <button type="button"
-                            class="btn btn-danger btn-sm"
-                            onclick="confirmDelete('@dr["AppointmentID"]', '@dr["PatientName"]')">
-                        Delete
-                    </button>
-                </td>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>AppointmentID</th>
+                <th>Doctor name</th>
+                <th>Patient Name</th>
+                <th>Status</th>
+          
+               
+                <th>Appointment Date</th>
+                <th>Total Amount</th>
+                <th>Modified</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (DataRow dr in Model.Rows)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="SelectedAppointmentIds" value="@dr["AppointmentID"]" class="selectCheckbox" />
+                    </td>
+                    <td>@dr["AppointmentID"]</td>
+                    <td>@dr["DoctorName"]</td>
+                    <td>@dr["PatientName"]</td>
+                    <td>@dr["AppointmentStatus"]</td>
+             
+                 
+                    <td>@Convert.ToDateTime(dr["AppointmentDate"]).ToString("yyyy-MM-dd")</td>
+                    <td>@Convert.ToDecimal(dr["TotalConsultedAmount"]).ToString("C")</td>
+                    <td>@Convert.ToDateTime(dr["Modified"]).ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <a asp-controller="Appointment" asp-action="AppointmentForm" asp-route-ID="@dr["AppointmentID"]"
+                           class="btn btn-primary btn-sm me-1">Edit</a>
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                onclick="confirmDelete('@dr["AppointmentID"]', '@dr["username"]')">
+                            Delete
+                        </button>
 
-<!-- SweetAlert Delete Script -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>
+
+<!-- ✅ Pagination -->
+<nav>
+    <ul class="pagination justify-content-center">
+        @{
+            int totalItems = ViewBag.TotalItems;
+            int pageSize = ViewBag.PageSize;
+            int pageNumber = ViewBag.PageNumber;
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (totalPages > 1)
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == pageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("AppointmentList", new { page = i, searchTerm = ViewBag.SearchTerm })">@i</a>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</nav>
+
 <script>
-    function confirmDelete(appointmentId, patientName) {
+    // Select All
+    document.getElementById("selectAll").addEventListener("change", function () {
+        let checkboxes = document.querySelectorAll(".selectCheckbox");
+        checkboxes.forEach(chk => chk.checked = this.checked);
+    });
+
+    // Delete selected
+    function confirmDeleteSelected() {
+        let selected = document.querySelectorAll(".selectCheckbox:checked");
+        if (selected.length === 0) {
+            Swal.fire('No Appointments Selected', 'Please select at least one appointment to delete.', 'info');
+            return;
+        }
         Swal.fire({
-            title: 'Are you sure?',
-            text: `Do you really want to delete the appointment for "${patientName}"?`,
+            title: 'Delete Selected?',
+            text: '⚠️ This will permanently remove selected appointments!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, delete it!',
+            confirmButtonText: 'Yes, delete selected!',
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/Appointment/AppointmentDelete?AppointmentID=${appointmentId}`;
+                document.getElementById('deleteSelectedForm').submit();
             }
         });
     }
+
+
+      // Delete single appointment with name
+      function confirmDelete(id, appointmentName) {
+          Swal.fire({
+              title: 'Are you sure?',
+              text: `Do you really want to delete the appointment "${appointmentName}"?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Yes, delete it!',
+              cancelButtonText: 'Cancel'
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  window.location.href = `/appointment/appointment-delete`;
+              }
+          });
+      }
 </script>
+
