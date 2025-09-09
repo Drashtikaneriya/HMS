@@ -8,6 +8,11 @@ namespace HMS
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            //Login Service
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSession();
+
 
             var app = builder.Build();
 
@@ -23,12 +28,12 @@ namespace HMS
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Dashboard}/{action=Index}/{id?}");
+                pattern: "{controller=User}/{action=Login}/{id?}");
 
             app.Run();
         }
