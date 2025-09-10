@@ -1,4 +1,4 @@
-﻿@model HMS.Models.DoctorDepartmentModelAddEdit
+﻿@* @model HMS.Models.DoctorDepartmentModelAddEdit
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -35,6 +35,77 @@
                         <div class="d-flex justify-content-between">
                             <a href="/DoctorDepartment/DoctorDepartmentList" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">⬅ Back to DoctorDepartment List</a>
                             <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
+                    © HMS System • 2025
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+@model HMS.Models.DoctorDepartmentModelAddEdit
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4" style="background-color: #fefefe;">
+                <div class="card-header text-center rounded-top-4" style="background-color: #eaf6ff;">
+                    <h4 class="mb-0 text-primary">Assign Doctor to Department</h4>
+                </div>
+                <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
+                    <form method="post" asp-controller="DoctorDepartment" asp-action="DoctorDepartmentAddEdit">
+
+                        <input asp-for="DoctorDepartmentID" type="hidden" />
+
+                        <!-- ✅ Doctor Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="DoctorID" class="form-label fw-bold text-dark">Doctor</label>
+                            <select asp-for="DoctorID"
+                                    asp-items="ViewBag.DoctorList"
+                                    class="form-control border-light rounded-3"
+                                    style="background-color: #f5faff;" required>
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                            <span asp-validation-for="DoctorID" class="text-danger"></span>
+                        </div>
+
+                        <!-- ✅ Department Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="DepartmentID" class="form-label fw-bold text-dark">Department</label>
+                            <select asp-for="DepartmentID"
+                                    asp-items="ViewBag.DepartmentList"
+                                    class="form-control border-light rounded-3"
+                                    style="background-color: #f5faff;" required>
+                                <option value="">-- Select Department --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentID" class="text-danger"></span>
+                        </div>
+
+                        <!-- Hidden Modified -->
+                        <input asp-for="Modified" type="hidden" />
+
+                        <!-- ✅ User Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="UserID" class="form-label fw-bold text-dark">User</label>
+                            <select asp-for="UserID"
+                                    asp-items="ViewBag.UserList"
+                                    class="form-control border-light rounded-3"
+                                    style="background-color: #f5faff;" required>
+                                <option value="">-- Select User --</option>
+                            </select>
+                            <span asp-validation-for="UserID" class="text-danger"></span>
+                        </div>
+
+                        <!-- ✅ Buttons Section -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/DoctorDepartment/DoctorDepartmentList" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">
+                                ⬅ Back to DoctorDepartment List
+                            </a>
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">
+                                Submit
+                            </button>
                         </div>
                     </form>
                 </div>

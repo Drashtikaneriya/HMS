@@ -38,7 +38,23 @@
     * License: https://bootstrapmade.com/license/
     ======================================================== -->
 </head>
+<style>
+    <style >
+    #sidebar {
+        background-color: #f5f2fa; /* pastel lavender */
+    }
 
+    #sidebar .nav-item a {
+        color: #333; /* text readable rakhe */
+    }
+
+        #sidebar .nav-item a:hover {
+            background-color: rgba(255, 255, 255, 0.6); /* hover effect */
+            border-radius: 6px;
+        }
+</style>
+
+</style>
 <body>
 
     <!-- ======= Header ======= -->
@@ -256,11 +272,12 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="#">
+                            <a class="dropdown-item d-flex align-items-center" asp-controller="User" asp-action="Logout">
                                 <i class="bi bi-box-arrow-right"></i>
                                 <span>Sign Out</span>
                             </a>
                         </li>
+
 
                     </ul><!-- End Profile Dropdown Items -->
                 </li><!-- End Profile Nav -->
@@ -270,6 +287,7 @@
 
     </header><!-- End Header -->
     <!-- ======= Sidebar ======= -->
+
     <aside id="sidebar" class="sidebar">
 
         <ul class="sidebar-nav" id="sidebar-nav">

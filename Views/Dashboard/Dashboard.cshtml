@@ -1,102 +1,362 @@
-﻿@model HMS.Models.DashboardCountModel
+﻿ 
+@* 
+    <div class="row g-4">
+        <!-- Users -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#f0f7ff;">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-3 text-primary"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.UserCount</h4>
+                    <p class="text-muted mb-2">Users</p>
+                    <a href="/User/UserList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctors -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#fdf4f6;">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-badge fs-3 text-danger"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.DoctorCount</h4>
+                    <p class="text-muted mb-2">Doctors</p>
+                    <a asp-controller="Doctor" asp-action="DoctorList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#f3faf4;">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart-pulse fs-3 text-success"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.PatientCount</h4>
+                    <p class="text-muted mb-2">Patients</p>
+                    <a href="/Patient/PatientList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <!-- Departments -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#fff8f0;">
+                <div class="card-body text-center">
+                    <i class="bi bi-building fs-3 text-warning"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.DepartmentCount</h4>
+                    <p class="text-muted mb-2">Departments</p>
+                    <a href="/Department/DepartmentList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#f5f2fa;">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-event fs-3 text-secondary"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.AppointmentCount</h4>
+                    <p class="text-muted mb-2">Appointments</p>
+                    <a href="/Appointment/list" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employees -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3" style="background:#f9f5fb;">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase fs-3 text-info"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.EmployeeCount</h4>
+                    <p class="text-muted mb-2">DoctorDept</p>
+                    <a href="/DoctorDepartment/DoctorDepartmentList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <hr />
+
+    <!-- Charts -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3">Revenue Trend</h6>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3">Appointments Overview</h6>
+                    <canvas id="appointmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Revenue Chart (Bar - Monthly Comparison)
+            var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.RevenueLabels)),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: @Html.Raw(Json.Serialize(Model.RevenueData)),
+                        backgroundColor: 'rgba(13,110,253,0.5)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 500 } // adjust based on data
+                        }
+                    }
+                }
+            });
+
+            // Appointment Chart (Polar Area - Modern Look)
+            var appointmentCtx = document.getElementById('appointmentChart').getContext('2d');
+            new Chart(appointmentCtx, {
+                type: 'pie',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.AppointmentLabels)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.AppointmentData)),
+                        backgroundColor: [
+                            '#6ea8fe', // Blue
+                            '#f28b82', // Red
+                            '#81c995', // Green
+                            '#ffb74d', // Orange
+                            '#a78bfa', // Purple
+                            '#4dd0e1'  // Teal
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#444',
+                                font: { size: 13 }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    }
+ *@
+@model HMS.Models.DashboardCountModel
 @{
     ViewData["Title"] = "Dashboard";
 }
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
 <style>
-    .dashboard-card {
-        min-height: 180px; /* ensures all cards are same height */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: transform 0.2s;
+    /* Hover Effect */
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .dashboard-card i {
-        font-size: 2.5rem;
-    }
-
-    .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
 </style>
 
-<div class="container py-4">
-    <div class="row g-4 justify-content-center">
-        <!-- Row 1: Users, Doctors, Departments -->
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="User" asp-action="UserList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-people text-primary"></i>
-                    <h5 class="mt-2">Users</h5>
-                    <h3 class="fw-bold">@Model.TotalUsers</h3>
+<div class="container-fluid py-3">
+
+    <!-- 🔹 KPI Cards -->
+    <div class="row g-4">
+        <!-- Users -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#eaf3ff,#f7fbff);">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-3 text-primary"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.UserCount</h4>
+                    <p class="text-muted mb-2">Users</p>
+                    <a href="/User/UserList" class="btn btn-sm btn-light border rounded-pill">View</a>
                 </div>
-            </a>
+            </div>
         </div>
 
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="Doctor" asp-action="DoctorList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-person-badge text-success"></i>
-                    <h5 class="mt-2">Doctors</h5>
-                    <h3 class="fw-bold">@Model.TotalDoctors</h3>
+        <!-- Doctors -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#fff0f3,#fef7f8);">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-badge fs-3 text-danger"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.DoctorCount</h4>
+                    <p class="text-muted mb-2">Doctors</p>
+                    <a asp-controller="Doctor" asp-action="DoctorList" class="btn btn-sm btn-light border rounded-pill">View</a>
                 </div>
-            </a>
+            </div>
         </div>
 
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="Department" asp-action="DepartmentList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-building text-warning"></i>
-                    <h5 class="mt-2">Departments</h5>
-                    <h3 class="fw-bold">@Model.TotalDepartments</h3>
+        <!-- Patients -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#e9fdf1,#f6fcf7);">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart-pulse fs-3 text-success"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.PatientCount</h4>
+                    <p class="text-muted mb-2">Patients</p>
+                    <a href="/Patient/PatientList" class="btn btn-sm btn-light border rounded-pill">View</a>
                 </div>
-            </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <!-- Departments -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#fff4e6,#fffaf4);">
+                <div class="card-body text-center">
+                    <i class="bi bi-building fs-3 text-warning"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.DepartmentCount</h4>
+                    <p class="text-muted mb-2">Departments</p>
+                    <a href="/Department/DepartmentList" class="btn btn-sm btn-light border rounded-pill">View</a>
+                </div>
+            </div>
         </div>
 
-        <!-- Row 2: Doctor-Department, Appointments, Patients -->
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="DoctorDepartment" asp-action="DoctorDepartmentList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-person-lines-fill text-danger"></i>
-                    <h5 class="mt-2">Doc-Dept</h5>
-                    <h3 class="fw-bold">@Model.TotalDoctorDepartments</h3>
+        <!-- Appointments -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#f3f1ff,#fafaff);">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-event fs-3 text-secondary"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.AppointmentCount</h4>
+                    <p class="text-muted mb-2">Appointments</p>
+                    <a href="/Appointment/List" class="btn btn-sm btn-light border rounded-pill">View</a>
                 </div>
-            </a>
+            </div>
         </div>
 
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="Appointment" asp-action="AppointmentList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-calendar-check text-info"></i>
-                    <h5 class="mt-2">Appointments</h5>
-                    <h3 class="fw-bold">@Model.TotalAppointments</h3>
+        <!-- DoctorDept -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-3 shadow-sm" style="background:linear-gradient(135deg,#f8f4ff,#fbf9ff);">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase fs-3 text-info"></i>
+                    <h4 class="fw-bold mt-2 text-dark">@Model.EmployeeCount</h4>
+                    <p class="text-muted mb-2">DoctorDept</p>
+                    <a href="/DoctorDepartment/DoctorDepartmentList" class="btn btn-sm btn-light border rounded-pill">View</a>
                 </div>
-            </a>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <!-- 🔹 Charts -->
+    <div class="row mt-4">
+        <!-- Revenue Trend -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3">Revenue Trend</h6>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
         </div>
 
-        <div class="col-12 col-md-4 col-lg-4">
-            <a asp-controller="Patient" asp-action="PatientList" class="text-decoration-none">
-                <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                    <i class="bi bi-heart-pulse text-secondary"></i>
-                    <h5 class="mt-2">Patients</h5>
-                    <h3 class="fw-bold">@Model.TotalPatients</h3>
+        <!-- Appointments Overview -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3">Appointments Overview</h6>
+                    <canvas id="appointmentChart"></canvas>
                 </div>
-            </a>
-        </div>
-
-        <!-- Row 3: Revenue -->
-        <div class="col-12 col-md-4 col-lg-4">
-            <div class="card shadow rounded-4 border-0 text-center p-3 dashboard-card">
-                <i class="bi bi-currency-dollar text-success"></i>
-                <h5 class="mt-2">Revenue</h5>
-                <h3 class="fw-bold">@Model.TotalRevenue.ToString("C")</h3>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // 🔹 Revenue Chart (Bar + Line Overlay)
+        var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.RevenueLabels)),
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Revenue',
+                        data: @Html.Raw(Json.Serialize(Model.RevenueData)),
+                        backgroundColor: 'rgba(13,110,253,0.5)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    },
+                    {
+                        type: 'line',
+                        label: 'Trend',
+                        data: @Html.Raw(Json.Serialize(Model.RevenueData)),
+                        borderColor: '#ff6384',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#ff6384'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // 🔹 Appointment Chart (Doughnut with nice colors)
+        var appointmentCtx = document.getElementById('appointmentChart').getContext('2d');
+        new Chart(appointmentCtx, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.AppointmentLabels)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.AppointmentData)),
+                    backgroundColor: [
+                        '#6ea8fe', // Blue
+                        '#f28b82', // Red
+                        '#81c995', // Green
+                        '#ffb74d', // Orange
+                        '#a78bfa', // Purple
+                        '#4dd0e1'  // Teal
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%', // 🔥 makes it doughnut
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: { enabled: true }
+                }
+            }
+        });
+    </script>
+}

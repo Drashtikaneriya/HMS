@@ -1,10 +1,67 @@
 ﻿@model DataTable
 @using System.Data
 @using System.Linq
+@using HMS.NewFolder
 
 <h1 class="mb-4">User List</h1>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- ✅ Full width single line search form -->
+<form asp-controller="User" asp-action="UserList" method="get" class="row g-2 align-items-center mb-3">
+
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" name="name" value="@Context.Request.Query["name"]" class="form-control" placeholder="Name">
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="text" name="email" value="@Context.Request.Query["email"]" class="form-control" placeholder="Email">
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+            <input type="text" name="mobileNo" value="@Context.Request.Query["mobileNo"]" class="form-control" placeholder="Mobile No">
+        </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <!-- ✅ Button same height as inputs -->
+    <div class="col-md-3">
+        <div class="input-group">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </div>
+
+    @{
+        // Count Active and Inactive users
+        int activeUsers = Model.AsEnumerable().Count(r => Convert.ToBoolean(r["IsActive"]));
+        int inactiveUsers = Model.AsEnumerable().Count(r => !Convert.ToBoolean(r["IsActive"]));
+    }
+
+    <!-- ✅ Active/Inactive Users small badges -->
+    <div class="d-flex gap-2 mb-3">
+        <div class="badge bg-success d-flex align-items-center gap-1 p-2">
+            <i class="bi bi-check-circle"></i> Active: @activeUsers
+        </div>
+        <div class="badge bg-danger d-flex align-items-center gap-1 p-2">
+            <i class="bi bi-x-circle"></i> Inactive: @inactiveUsers
+        </div>
+    </div>
+   
+</form>
+
+
+
+@* 
 
 <!-- ✅ Search Form -->
 <form asp-controller="User" asp-action="UserList" method="get"
@@ -43,6 +100,31 @@
         <span>Search</span>
     </button>
 </form>
+@{
+    // Count Active and Inactive users
+    int activeUsers = Model.AsEnumerable().Count(r => Convert.ToBoolean(r["IsActive"]));
+    int inactiveUsers = Model.AsEnumerable().Count(r => !Convert.ToBoolean(r["IsActive"]));
+}
+
+<div class="row g-4 mb-3">
+    <!-- Active Users -->
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0 rounded-3 text-center p-3" style="background:#d4edda;">
+            <i class="bi bi-check-circle fs-3 text-success"></i>
+            <h4 class="fw-bold mt-2">@activeUsers</h4>
+            <p class="mb-0 text-success">Active Users</p>
+        </div>
+    </div>
+
+    <!-- Inactive Users -->
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0 rounded-3 text-center p-3" style="background:#f8d7da;">
+            <i class="bi bi-x-circle fs-3 text-danger"></i>
+            <h4 class="fw-bold mt-2">@inactiveUsers</h4>
+            <p class="mb-0 text-danger">Inactive Users</p>
+        </div>
+    </div>
+</div> *@
 
 <!-- ✅ Buttons -->
 <div class="d-flex justify-content-between mb-3">
@@ -57,13 +139,21 @@
     </div>
 </div>
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
+
+<!-- ✅ TempData Messages -->
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 <!-- ✅ User Table -->
@@ -106,13 +196,24 @@
                     </td>
                     <td>@Convert.ToDateTime(dr["Modified"]).ToString("yyyy-MM-dd")</td>
                     <td>
-                        <a asp-controller="User" asp-action="UserForm" asp-route-ID="@dr["UserID"]"
+                        @* <a asp-controller="User" asp-action="UserForm" asp-route-ID="@dr["UserID"]"
+                           class="btn btn-primary btn-sm me-1">Edit</a> *@
+                        @* <a asp-controller="User"
+                           asp-action="UserForm"
+                           asp-route-ID="@UrlEncryptor.Encrypt(dr["UserID"].ToString())"
+                           class="btn btn-primary btn-sm me-1">
+                              Edit
+                        </a> *@
+                        <a asp-controller="User"
+                           asp-action="UserForm"
+                           asp-route-ID="@UrlEncryptor.Encrypt(dr["UserID"].ToString())"
                            class="btn btn-primary btn-sm me-1">Edit</a>
 
                         <button type="button" class="btn btn-danger btn-sm"
-                                onclick="confirmDelete('@dr["UserID"]', '@dr["UserName"]')">
+                                onclick="confirmDelete('@UrlEncryptor.Encrypt(dr["UserID"].ToString())', '@dr["UserName"]')">
                             Delete
                         </button>
+
                     </td>
                 </tr>
             }
@@ -155,7 +256,7 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = `/user/user-delete?UserID=${userId}`;
+                window.location.href = `/User/UserDelete?UserID=${userId}`;
             }
         });
     }

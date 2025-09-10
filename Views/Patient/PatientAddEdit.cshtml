@@ -16,63 +16,73 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="Name" class="form-label fw-bold text-dark">Full Name</label>
-                                <input asp-for="Name" type="text" class="form-control border-light rounded-3" id="Name" name="Name" placeholder="Enter patient name" style="background-color: #f5faff;" required>
+                                <input asp-for="Name" type="text" class="form-control border-light rounded-3" id="Name" placeholder="Enter patient name" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="DateOfBirth" class="form-label fw-bold text-dark">DOB</label>
-                                <input asp-for="DateOfBirth"   type="date" class="form-control border-light rounded-3" id="DateOfBirth" name="DateOfBirth" style="background-color: #f5faff;" required>
+                                <input asp-for="DateOfBirth" type="date" class="form-control border-light rounded-3" id="DateOfBirth" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="Gender" class="form-label fw-bold text-dark">Gender</label>
-                                <select asp-for="Gender" class="form-select border-light rounded-3" id="Gender" name="Gender" style="background-color: #f5faff;" required>
+                                <select asp-for="Gender" class="form-select border-light rounded-3" id="Gender" style="background-color: #f5faff;" required>
                                     <option value="" disabled selected>Select gender</option>
                                     <option>Male</option>
                                     <option>Female</option>
                                     <option>Other</option>
                                 </select>
                             </div>
+
                             <input asp-for="patientID" type="hidden" />
+
                             <div class="col-md-6 mb-3">
                                 <label for="Phone" class="form-label fw-bold text-dark">Phone</label>
-                       h         <input asp-for="Phone" type="tel" class="form-control border-light rounded-3" id="Phone" name="Phone" placeholder="Enter phone number" style="background-color: #f5faff;" required>
+                                <input asp-for="Phone" type="tel" class="form-control border-light rounded-3" id="Phone" placeholder="Enter phone number" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="Email" class="form-label fw-bold text-dark">Email Address</label>
-                                <input asp-for="Email" type="email" class="form-control border-light rounded-3" id="Email" name="Email" placeholder="Enter email" style="background-color: #f5faff;" required>
+                                <input asp-for="Email" type="email" class="form-control border-light rounded-3" id="Email" placeholder="Enter email" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="Address" class="form-label fw-bold text-dark">Address</label>
-                                <input asp-for="Address" type="text" class="form-control border-light rounded-3" id="Address" name="Address" placeholder="Enter address" style="background-color: #f5faff;" required>
+                                <input asp-for="Address" type="text" class="form-control border-light rounded-3" id="Address" placeholder="Enter address" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="City" class="form-label fw-bold text-dark">City</label>
-                                <input asp-for="City" type="text" class="form-control border-light rounded-3" id="City" name="City" placeholder="Enter city" style="background-color: #f5faff;" required>
+                                <input asp-for="City" type="text" class="form-control border-light rounded-3" id="City" placeholder="Enter city" style="background-color: #f5faff;" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label for="State" class="form-label fw-bold text-dark">State</label>
-                                <input asp-for="State" type="text" class="form-control border-light rounded-3" id="State" name="State" placeholder="Enter state" style="background-color: #f5faff;" required>
+                                <input asp-for="State" type="text" class="form-control border-light rounded-3" id="State" placeholder="Enter state" style="background-color: #f5faff;" required>
                             </div>
 
+                            <!-- 🔽 Dropdown instead of input -->
                             <div class="col-md-6 mb-3">
-                                <label for="UserID" class="form-label fw-bold text-dark">User ID</label>
-                                <input asp-for="UserID" type="number" class="form-control border-light rounded-3" id="UserID" name="UserID" placeholder="Enter linked user ID" style="background-color: #f5faff;" required>
+                                <label asp-for="UserID" class="form-label fw-bold text-dark">User</label>
+                                <select asp-for="UserID"
+                                        asp-items="ViewBag.UserList"
+                                        class="form-control border-light rounded-pill shadow-sm"
+                                        style="background-color: #f5faff;"
+                                        required>
+                                    <option value="">-- Select User --</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a user.</div>
                             </div>
-                            <input asp-for="Modified" type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"/>
+
+                            <input asp-for="Modified" type="hidden" name="Modified" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold text-dark">Is Active</label><br />
                                 <div class="form-check form-switch">
-                                    <input  asp-for="IsActive" class="form-check-input" type="checkbox" id="IsActive" name="IsActive">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" id="IsActive">
                                     <label class="form-check-label text-dark" for="IsActive">Yes</label>
                                 </div>
                             </div>
-
                         </div>
 
                         <!-- ✅ Buttons Section -->

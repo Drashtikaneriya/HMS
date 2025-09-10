@@ -10,7 +10,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <h1 class="mb-4">Doctor List</h1>
-
 <!-- Search Form -->
 <div>
     <form method="get" asp-action="DoctorList" class="d-flex">
@@ -21,6 +20,49 @@
     </form>
     <br />
 </div>
+@{
+    // Qualification counts (case-insensitive)
+    int phdCount = Model.AsEnumerable()
+                        .Count(r => r["Qualification"].ToString().Equals("PhD", StringComparison.OrdinalIgnoreCase));
+    int mdCount = Model.AsEnumerable()
+                       .Count(r => r["Qualification"].ToString().Equals("MD", StringComparison.OrdinalIgnoreCase));
+    int mbbsCount = Model.AsEnumerable()
+                         .Count(r => r["Qualification"].ToString().Equals("MBBS", StringComparison.OrdinalIgnoreCase));
+}
+
+<div class="d-flex gap-3 mb-4 flex-wrap">
+    <!-- PhD -->
+    <div class="position-relative">
+        <button class="btn btn-lg shadow-sm rounded-4" style="background:#e6f0ff; color:#0d6efd; border:1px solid #cce0ff; min-width:150px;">
+            PhD
+        </button>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+            @phdCount
+        </span>
+    </div>
+
+    <!-- MD -->
+    <div class="position-relative">
+        <button class="btn btn-lg shadow-sm rounded-4" style="background:#fff0f6; color:#d63384; border:1px solid #f5c6d0; min-width:150px;">
+            MD
+        </button>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            @mdCount
+        </span>
+    </div>
+
+    <!-- MBBS -->
+    <div class="position-relative">
+        <button class="btn btn-lg shadow-sm rounded-4" style="background:#e6ffed; color:#198754; border:1px solid #b3f0c6; min-width:150px;">
+            MBBS
+        </button>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+            @mbbsCount
+        </span>
+    </div>
+</div>
+
+
 
 <!-- ✅ Buttons -->
 <div class="d-flex justify-content-between mb-3">

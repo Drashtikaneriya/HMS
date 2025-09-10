@@ -1,4 +1,4 @@
-﻿
+﻿@* 
 @model HMS.Models.DepartmentAddEditModel
 @{
     ViewData["Title"] = "Insert Department";
@@ -48,6 +48,83 @@
                             </div>
                     </form>
                 </div>
+                <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
+                    © HMS System • 2025
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+@model HMS.Models.DepartmentAddEditModel
+@{
+    ViewData["Title"] = "Insert Department";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4" style="background-color: #fefefe;">
+                <div class="card-header text-center rounded-top-4" style="background-color: #eaf6ff;">
+                    <h4 class="mb-0 text-primary">Insert New Department</h4>
+                </div>
+
+                <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
+                    <form method="post" asp-controller="Department" asp-action="DepartmentAddEdit">
+                        <input asp-for="DepartmentID" type="hidden" />
+
+                        <!-- Department Name -->
+                        <div class="mb-3">
+                            <label asp-for="DepartmentName" class="form-label fw-bold text-dark"></label>
+                            <input asp-for="DepartmentName"
+                                   class="form-control border-light rounded-3"
+                                   placeholder="Enter department name"
+                                   style="background-color: #f5faff;" required />
+                            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold text-dark"></label>
+                            <textarea asp-for="Description"
+                                      class="form-control border-light rounded-3"
+                                      rows="3"
+                                      placeholder="Optional department description"
+                                      style="background-color: #f5faff;"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- User Dropdown -->
+                        <div class="mb-3">
+                            <label asp-for="UserID" class="form-label fw-bold text-dark"></label>
+                            <select asp-for="UserID"
+                                    asp-items="ViewBag.UserList"
+                                    class="form-control border-light rounded-3"
+                                    style="background-color: #f5faff;" required>
+                                <option value="">-- Select User --</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a user.</div>
+                            <span asp-validation-for="UserID" class="text-danger"></span>
+                        </div>
+
+                        <!-- Modified Date (Hidden) -->
+                        <input asp-for="Modified" type="hidden" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+
+                        <!-- Is Active -->
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" id="IsActive">
+                            <label asp-for="IsActive" class="form-check-label fw-bold text-dark"></label>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/Department/DepartmentList" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">
+                                ⬅ Back to Department List
+                            </a>
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="card-footer text-center small text-muted rounded-bottom-4" style="background-color: #eaf6ff;">
                     © HMS System • 2025
                 </div>

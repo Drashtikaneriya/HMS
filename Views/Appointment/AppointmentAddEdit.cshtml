@@ -12,7 +12,7 @@
                     <h4 class="mb-0 text-primary">Insert New Appointment</h4>
                 </div>
                 <div class="card-body px-4 py-3" style="background-color: #fcfcfc;">
-                    <form method="post" asp-controller="Appointment" asp-action="AppointmentAddEdit">
+                    <form method="post" asp-controller="Appointment" asp-action="AppointmentAddEdit"    >
                         <input asp-for="AppointmentID" type="hidden" />
                         <div class="row">
                             <div class="col-md-3 mb-3">
@@ -69,10 +69,7 @@
                             </div>
                         </div>
 
-                        <!-- Hidden fields -->
-                        <input asp-for="Created" type="hidden" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
-                        <input asp-for="Modified" type="hidden" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
-
+                      
                         <div class="d-flex justify-content-between">
                             <a href="/appointment/list" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">⬅ Back to Appointment List</a>
                             <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold">Submit</button>
@@ -85,10 +82,4 @@
             </div>
         </div>
     </div>
-</div>
-@* 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-} *@
+</div> 
