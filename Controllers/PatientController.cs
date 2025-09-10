@@ -1,5 +1,6 @@
 ﻿using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -83,8 +84,40 @@ namespace HMS.Controllers
 
                 return RedirectToAction("PatientList");
             }
+            UserDropDown();
             return View("PatientAddEdit");
         }
+        #region User Drop Down
+        public void UserDropDown()
+        {
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_USR_User_SelectForDropDown";
+
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<SelectListItem> userList = new List<SelectListItem>();
+                foreach (DataRow data in dt.Rows)
+                {
+                    userList.Add(new SelectListItem
+                    {
+                        Value = data["UserID"].ToString(),
+                        Text = data["UserName"].ToString()
+                    });
+                }
+
+                ViewBag.UserList = userList;
+            }
+        }
+
+        #endregion
 
         public IActionResult PatientForm(int ID)
         {
@@ -117,11 +150,12 @@ namespace HMS.Controllers
                     model.DateOfBirth = Convert.ToDateTime(reader["DateOfBirth"]);
                     model.Modified = DateTime.Now;
                 }
-
+                UserDropDown();
                 return View("PatientAddEdit", model);
             }
             else
             {
+                UserDropDown();
                 return View("PatientAddEdit", new PatientAddEditModel());
             }
         }

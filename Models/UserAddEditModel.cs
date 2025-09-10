@@ -4,37 +4,29 @@ namespace HMS.Models
 {
     public class UserAddEditModel
     {
+
         public int? UserID { get; set; }
 
-        [Required(ErrorMessage = "Please enter a username")]
-        [Display(Name = "User Name")]
-        [StringLength(50, ErrorMessage = "User name cannot exceed 50 characters")]
+        [Required(ErrorMessage = "User name is required")]
         public string UserName { get; set; }
 
-        [Required(ErrorMessage = "Please enter a password")]
-        [Display(Name = "Password")]
+        [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 to 20 characters")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "Please enter an email address")]
-        [Display(Name = "Email Address")]
-        [EmailAddress(ErrorMessage = "Invalid Email Address")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email Format")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Please enter a mobile number")]
-        [Display(Name = "Mobile Number")]
+        [Required(ErrorMessage = "Mobile number is required")]
         [Phone(ErrorMessage = "Invalid Mobile Number")]
-        [StringLength(10, ErrorMessage = "Mobile number cannot exceed 10 digits")]
         public string MobileNo { get; set; }
 
-        [Display(Name = "Active User")]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
-        [Display(Name = "Created Date")]
-        public DateTime Created { get; set; } = DateTime.Now;
+        public DateTime Created { get; set; }
 
-        [Display(Name = "Modified Date")]
-        public DateTime Modified { get; set; } = DateTime.Now;
+  
+        public DateTime Modified { get; set; }
     }
 }

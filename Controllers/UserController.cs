@@ -1,5 +1,7 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using HMS.Models;
+using HMS.NewFolder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
@@ -174,31 +176,74 @@ namespace HMS.Controllers
 
         //  User Form (Edit / Add)
         //[Route("user-edit")]
-        public IActionResult UserForm(int ID)
+        //public IActionResult UserForm(int ID)
+        //{
+
+        //    if (ID > 0)
+        //    {
+
+        //        string connectionString = this._configuration.GetConnectionString("ConnectionString");
+        //        SqlConnection connection = new SqlConnection(connectionString);
+        //        connection.Open();
+        //        SqlCommand command = connection.CreateCommand();
+        //        command.CommandType = CommandType.StoredProcedure;
+        //        command.CommandText = "PR_User_User_SelectByPK";
+        //        command.Parameters.AddWithValue("@UserID", ID);
+        //        SqlDataReader reader = command.ExecuteReader();
+
+        //        UserAddEditModel model = new UserAddEditModel();
+        //        while (reader.Read())
+        //        {
+        //            model.UserID = Convert.ToInt32(reader["UserID"]);
+        //            model.UserName = reader["UserName"].ToString();
+        //            model.Password = reader["Password"].ToString();
+        //            model.Email = reader["Email"].ToString();
+        //            model.MobileNo = reader["MobileNo"].ToString();
+        //            model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+        //        }
+
+        //        return View("UserAddEdit", model);
+        //    }
+        //    else
+        //    {
+        //        return View("UserAddEdit", new UserAddEditModel());
+        //    }
+        //}
+        public IActionResult UserForm(string ID)
         {
-            if (ID > 0)
+            int decryptedUserID = 0;
+
+            if (!string.IsNullOrEmpty(ID))
+            {
+                decryptedUserID = Convert.ToInt32(UrlEncryptor.Decrypt(ID));
+            }
+
+            if (decryptedUserID > 0)
             {
                 string connectionString = this._configuration.GetConnectionString("ConnectionString");
-                SqlConnection connection = new SqlConnection(connectionString);
-                connection.Open();
-                SqlCommand command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_User_User_SelectByPK";
-                command.Parameters.AddWithValue("@UserID", ID);
-                SqlDataReader reader = command.ExecuteReader();
-
-                UserAddEditModel model = new UserAddEditModel();
-                while (reader.Read())
+                using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    model.UserID = Convert.ToInt32(reader["UserID"]);
-                    model.UserName = reader["UserName"].ToString();
-                    model.Password = reader["Password"].ToString();
-                    model.Email = reader["Email"].ToString();
-                    model.MobileNo = reader["MobileNo"].ToString();
-                    model.IsActive = Convert.ToBoolean(reader["IsActive"]);
-                }
+                    connection.Open();
+                    SqlCommand command = connection.CreateCommand();
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = "PR_User_User_SelectByPK";
+                    command.Parameters.AddWithValue("@UserID", decryptedUserID);
 
-                return View("UserAddEdit", model);
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    UserAddEditModel model = new UserAddEditModel();
+                    while (reader.Read())
+                    {
+                        model.UserID = Convert.ToInt32(reader["UserID"]);
+                        model.UserName = reader["UserName"].ToString();
+                        model.Password = reader["Password"].ToString();
+                        model.Email = reader["Email"].ToString();
+                        model.MobileNo = reader["MobileNo"].ToString();
+                        model.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                    }
+
+                    return View("UserAddEdit", model);
+                }
             }
             else
             {
@@ -220,14 +265,15 @@ namespace HMS.Controllers
 
                 if (UserAddEditModel.UserID > 0)
                 {
+                    // ✅ Update case
                     command.CommandText = "PR_User_User_UpdateByPK";
                     command.Parameters.AddWithValue("@UserID", UserAddEditModel.UserID);
                 }
                 else
                 {
+                    // ✅ Insert case
                     command.CommandText = "PR_User_User_Insert";
                     command.Parameters.AddWithValue("@Created", DateTime.Now);
-
                 }
 
                 command.Parameters.AddWithValue("@UserName", UserAddEditModel.UserName);
@@ -239,10 +285,22 @@ namespace HMS.Controllers
 
                 command.ExecuteNonQuery();
 
+                // ✅ Success message set karo
+                if (UserAddEditModel.UserID > 0)
+                {
+                    TempData["SuccessMessage"] = "✅ User updated successfully.";
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "✅ User inserted successfully.";
+                }
+
                 return RedirectToAction("UserList");
             }
+
             return View("UserAddEdit");
         }
+
 
         //  Delete All Users
         [HttpPost]
@@ -304,31 +362,59 @@ namespace HMS.Controllers
 
             return RedirectToAction("UserList");
         }
-
-        #region Delete Single User
-        [Route("user-delete")]
-        public IActionResult UserDelete(int UserID)
+        public IActionResult UserDelete(string UserID)
         {
             try
             {
+                int decryptedUserID = Convert.ToInt32(UrlEncryptor.Decrypt(UserID));
+
                 string connectionString = this._configuration.GetConnectionString("ConnectionString");
-                SqlConnection connection = new SqlConnection(connectionString);
-                connection.Open();
-                SqlCommand command = connection.CreateCommand();
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandText = "PR_User_User_Delete";
-                command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
-                command.ExecuteNonQuery();
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    using (SqlCommand command = connection.CreateCommand())
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.CommandText = "PR_User_User_Delete";
+                        command.Parameters.Add("@UserID", SqlDbType.Int).Value = decryptedUserID;
+                        command.ExecuteNonQuery();
+                    }
+                }
+
                 TempData["SuccessMessage"] = "✅ User Deleted Successfully.";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                Console.WriteLine(ex.ToString());
             }
+
             return RedirectToAction("UserList");
         }
-        #endregion
+
+        //#region Delete Single User
+        ////[Route("user-delete")]
+        //public IActionResult UserDelete(int UserID)
+        //{
+        //    try
+        //    {
+        //        string connectionString = this._configuration.GetConnectionString("ConnectionString");
+        //        SqlConnection connection = new SqlConnection(connectionString);
+        //        connection.Open();
+        //        SqlCommand command = connection.CreateCommand();
+        //        command.CommandType = CommandType.StoredProcedure;
+        //        command.CommandText = "PR_User_User_Delete";
+        //        command.Parameters.Add("@UserID", SqlDbType.Int).Value = UserID;
+        //        command.ExecuteNonQuery();
+        //        TempData["SuccessMessage"] = "✅ User Deleted Successfully.";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["ErrorMessage"] = ex.Message;
+        //        Console.WriteLine(ex.ToString());
+        //    }
+        //    return RedirectToAction("UserList");
+        //}
+        //#endregion
 
         // Export to Excel
         [HttpGet("ExportToExcel")]

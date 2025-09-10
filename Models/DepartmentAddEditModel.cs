@@ -7,11 +7,9 @@ namespace HMS.Models
 
         public int? DepartmentID { get; set; }
 
-        [Required]
-        [StringLength(100)]
+
         public required string DepartmentName { get; set; }
 
-        [StringLength(250)]
         public required string Description { get; set; }
 
         public bool IsActive { get; set; } = true;

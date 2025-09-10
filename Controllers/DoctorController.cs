@@ -1,5 +1,6 @@
 ﻿using HMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
@@ -60,6 +61,38 @@ namespace Hospital_Management_System.Controllers
 
             return View(pagedTable);
         }
+
+        #region User Drop Down
+        public void UserDropDown()
+        {
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_USR_User_SelectForDropDown";
+
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<SelectListItem> userList = new List<SelectListItem>();
+                foreach (DataRow data in dt.Rows)
+                {
+                    userList.Add(new SelectListItem
+                    {
+                        Value = data["UserID"].ToString(),
+                        Text = data["UserName"].ToString()
+                    });
+                }
+
+                ViewBag.UserList = userList;
+            }
+        }
+
+        #endregion
 
 
         // ✅ Delete Multiple Doctors
@@ -157,11 +190,12 @@ namespace Hospital_Management_System.Controllers
                     model.IsActive = Convert.ToBoolean(reader["IsActive"]);
                     model.UserID = Convert.ToInt32(reader["UserId"]);
                 }
-
+                UserDropDown();
                 return View("DoctorAddEdit", model);
             }
             else
             {
+                UserDropDown();
                 return View("DoctorAddEdit", new DoctorAddEditModel());
             }
         }
@@ -199,7 +233,7 @@ namespace Hospital_Management_System.Controllers
                 command.Parameters.Add("@UserId", SqlDbType.Int).Value = DoctorAddEditModel.UserID;
 
                 command.ExecuteNonQuery();
-
+                UserDropDown();
                 return RedirectToAction("DoctorList");
             }
             return RedirectToAction("DoctorList");

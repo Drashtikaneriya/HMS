@@ -71,6 +71,9 @@ namespace HMS.Controllers
                 command.CommandText = "PR_Dept_Department_Delete";
                 command.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
                 command.ExecuteNonQuery();
+
+                // ✅ Success message set karo
+                TempData["SuccessMessage"] = "Department deleted successfully.";
             }
             catch (Exception ex)
             {
@@ -79,7 +82,7 @@ namespace HMS.Controllers
             }
             return RedirectToAction("DepartmentList");
         }
-     
+
         public IActionResult DeleteSelectedDepartments(List<int> SelectedUserIds)
         {
             if (SelectedUserIds == null || SelectedUserIds.Count == 0)
@@ -143,7 +146,7 @@ namespace HMS.Controllers
                     model.Description = reader["Description"].ToString();
                     model.IsActive = Convert.ToBoolean(reader["IsActive"]);
                 }
-
+                UserDropDown();
                 return View("DepartmentAddEdit", model);
             }
             else
@@ -165,7 +168,7 @@ namespace HMS.Controllers
                 {
                     Console.WriteLine(error.ErrorMessage);
                 }
-
+                UserDropDown();
                 return View("DepartmentAddEdit", departmentModel);
             }
 
@@ -196,7 +199,7 @@ namespace HMS.Controllers
 
                 command.ExecuteNonQuery();
             }
-
+            UserDropDown();
             return RedirectToAction("DepartmentList");
         }
         [HttpGet("ExportDepartmentToExcel")]
@@ -279,6 +282,37 @@ namespace HMS.Controllers
             }
         }
 
+        #region User Drop Down
+        public void UserDropDown()
+        {
+            string connectionString = this.configuration.GetConnectionString("ConnectionString");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "PR_USR_User_SelectForDropDown";
+
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                List<SelectListItem> userList = new List<SelectListItem>();
+                foreach (DataRow data in dt.Rows)
+                {
+                    userList.Add(new SelectListItem
+                    {
+                        Value = data["UserID"].ToString(),
+                        Text = data["UserName"].ToString()
+                    });
+                }
+
+                ViewBag.UserList = userList;
+            }
+        }
+
+        #endregion
 
     }
 }

@@ -124,6 +124,7 @@ namespace HMS.Controllers
         }
 
         #region Add/Edit Appointment
+
         [HttpGet("Appointment-form")]
         public IActionResult AppointmentForm(int ID)
         {
@@ -162,6 +163,7 @@ namespace HMS.Controllers
             }
         }
 
+
         [HttpPost("save")]
         public IActionResult AppointmentAddEdit(AppointmentAddEditModel AppointmentAddEditModel)
         {
@@ -189,6 +191,8 @@ namespace HMS.Controllers
                 command.Parameters.Add("@Description", SqlDbType.NVarChar).Value = AppointmentAddEditModel.Description;
                 command.Parameters.Add("@SpecialRemarks", SqlDbType.NVarChar).Value = AppointmentAddEditModel.SpecialRemarks;
                 command.Parameters.Add("@Modified", SqlDbType.DateTime).Value = DateTime.Now;
+                //command.Parameters.Add("@Cr", SqlDbType.DateTime).Value = DateTime.Now;
+
                 command.Parameters.Add("@UserId", SqlDbType.Int).Value = AppointmentAddEditModel.UserID;
                 command.Parameters.Add("@TotalConsultedAmount", SqlDbType.Decimal).Value = AppointmentAddEditModel.TotalConsultedAmount;
                 command.ExecuteNonQuery();
